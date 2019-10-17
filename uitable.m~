@@ -1,0 +1,4 @@
+function uitable 
+figure('Name','DataTable')
+ui=uitable()
+end
