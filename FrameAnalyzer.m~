@@ -569,6 +569,7 @@ count=1;
 frame_num = get(handles.frame_numbox,'String');
 leg_num = get(handles.leg_numbox,'String');
 
+end
 key_press = get(gcf,'currentKey');
 if(strcmp(key_press,'return'))
     for n =0:(size(data,1)/2-1)
@@ -589,12 +590,6 @@ if(strcmp(key_press,'return'))
                     count = count+1;  
         end
     end
-    if(leg_num>size(ctf,2))
-        msgbox(',leg number not in boundary');
-        h = findall(0,'tag','leg_numbox');
-        set(h,'String',num2str(size(ctf,2)));
-        return;
-    end
     handle_fig = figure(1);
     close(handle_fig);
     filename = strcat('frame',num2str(frames_num),'.jpg');
@@ -610,7 +605,6 @@ if(strcmp(key_press,'return'))
         end
          
     end
-
     pts = ctf{str2num(leg_num)};
     TM= true;
 end
