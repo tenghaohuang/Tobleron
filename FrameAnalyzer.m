@@ -49,7 +49,7 @@ function checkFigureNumber()
 
     end
 
-
+%this function for the open video(initialization button)
 function initial_but_Callback(hObject, eventdata, handles)
 
 %fileName = get(handles.NameBox,'String');
@@ -98,7 +98,7 @@ SeperateView(I);
 flag =1; % for curve
 flag_ =0; % for save
 flag_2 = 1;
-
+%this is for display, it works like rereshing the page
 function SeperateView(I)
 hFig = figure('Toolbar','none',...
 'Menubar','none');
@@ -120,7 +120,7 @@ mag = api.getMagnification();
 r = api.getVisibleImageRect();
 set(hIm,'ButtonDownFcn',@curve);
 set(hFig,'KeyPressFcn',@press);
-
+%this is how we draw the curve
 function curve(~,~)
 % Init control polygon
 %figure;
@@ -175,7 +175,7 @@ canManipulatePts = false;
     
     
 end
-
+%this is stack implementation
 function newStack = pushStack(a,newValue)
 newStack = [a,newValue];
 
@@ -188,7 +188,7 @@ popedValue = a{1};
 newStack = a(2:end);
 
 
- 
+ %this is for excel form update
 function changeData(points)
 global counter;
 global leg_counter;
@@ -222,7 +222,8 @@ if(isvalid(uitable_handle)==1)
     set(handles_uitable,'data',data);   
     counter = counter-2;
 end
-
+%this is for keyboard operation when the current
+%  window is the 'canvas' 
 function press(hObject, eventdata, handles)
 key_press = get(gcf,'currentKey');
 global frames_path;
@@ -249,6 +250,7 @@ global data;
 global uitable_handle
 
 global canManipulatePts;
+%reopen the frame
 if((strcmp(key_press,'x')||strcmp(key_press,'X'))&&flag_2)
     handle_fig = figure(1);
     close(handle_fig);
@@ -258,6 +260,7 @@ if((strcmp(key_press,'x')||strcmp(key_press,'X'))&&flag_2)
     SeperateView(I);
     flag =1;
 end
+% redo
 if((strcmp(key_press,'z')||strcmp(key_press,'Z'))&&flag_2)
     [stack,p] = popStack(stack);
     handle_fig = figure(1);
@@ -282,6 +285,7 @@ if((strcmp(key_press,'z')||strcmp(key_press,'Z'))&&flag_2)
     end
     
 end
+%save
 if((strcmp(key_press,'s')||strcmp(key_press,'S'))&&flag_2)
     if(TM==false)
     stack = pushStack({pts},stack);
@@ -347,7 +351,7 @@ if((strcmp(key_press,'s')||strcmp(key_press,'S'))&&flag_2)
     end
 end
     
-
+%next frame
 if((strcmp(key_press,'d')||strcmp(key_press,'D'))&&flag_2)
     stack = {};
     handle_fig = figure(1);
@@ -364,7 +368,7 @@ if((strcmp(key_press,'d')||strcmp(key_press,'D'))&&flag_2)
     SeperateView(I);
     flag =1;
 end
-
+%previous frame
 if ((strcmp(key_press,'a')||strcmp(key_press,'A'))&&flag_2)
     stack={};
     if(frames_num==1)
@@ -387,6 +391,7 @@ if ((strcmp(key_press,'a')||strcmp(key_press,'A'))&&flag_2)
     flag =1;
    
 end
+%drag points
 if((strcmp(key_press,'r')||strcmp(key_press,'R'))&&flag_2)
     if (canManipulatePts)
        
@@ -427,6 +432,7 @@ if((strcmp(key_press,'r')||strcmp(key_press,'R'))&&flag_2)
     hold on;
     
 end
+% click an edge and make extra points
 if((strcmp(key_press,'e')||strcmp(key_press,'E'))&&flag_2)
     if (canManipulatePts)
        
@@ -463,6 +469,7 @@ if((strcmp(key_press,'e')||strcmp(key_press,'E'))&&flag_2)
    
  
 end
+%delete point
 if((strcmp(key_press,'f')||strcmp(key_press,'F'))&&flag_2)
     
    pts = deleteP(pts);
@@ -508,21 +515,27 @@ if((strcmp(key_press,'f')||strcmp(key_press,'F'))&&flag_2)
 
     
 end
-
+%this is the export button
 function export_but_Callback(hObject, eventdata, handles)
 global uitable_handle
 data = get(uitable_handle,'Data');
  name = datestr(now);
  FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
  xlswrite(FileName,data);
-
+%this is the frame box displaying the current frame number
+%    the frame selection function is implemented later
 function frame_numbox_Callback(hObject, eventdata, handles)
+
+frame_num = get(handles.frame_numbox,'String');
 
 function frame_numbox_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
+% an extraction of the function to repaint curves on canvas when
+% we want to go back
+% **********here i put some default color setting there
+% you can change that to make it look better!
 function paint(pts,color)
 hold on;
    
@@ -554,7 +567,12 @@ hold on;
     else
     plot(c(1, :), c(2, :), color);
     end
-    
+ 
+% implemented TM(time machine) here. the mechanic is that
+% when user put a number inside the leg_number box, it will
+% go back to the state where users can modify the set of points
+% belongs to that leg_number
+
 function leg_numbox_Callback(hObject, eventdata, handles)
 global pts;
 global data;
@@ -646,7 +664,7 @@ stack={};
     I=imread(fullfile(frames_path,filename));
     
     SeperateView(I);
-    flag 
+
     
 function next_but_Callback(hObject, eventdata, handles)
 stack = {};
@@ -706,7 +724,7 @@ function pushbutton6_Callback(hObject, eventdata, handles)
 folderPath = uigetdir();
 global frames_path;
 global leg_counter;
-global frames_path;
+
 global counter;
 global data;
 global flag;
@@ -720,7 +738,7 @@ stack = {};
 leg_counter =0;
 frames_num =1;
 counter =0;
-global data
+
 global uitable_handle;
 global bool;
 bool =0;
@@ -744,11 +762,17 @@ flag_2 = 1;
 
 
 
-% --- Executes on button press in Add_Edge.
+%done
 function Add_Edge_Callback(hObject, eventdata, handles)
 % hObject    handle to Add_Edge (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+global canManipulatePts;
+global pts;
+global h1;
+global h0;
+global flag_2;
+if(flag_2)
 if (canManipulatePts)
        
         pts = reposition_e(pts); 
@@ -781,12 +805,17 @@ if (canManipulatePts)
 
     h1 = plot(c(1, :), c(2, :), '-r');
     end
-
-% --- Executes on button press in Delete_Point.
+end
+%done
 function Delete_Point_Callback(hObject, eventdata, handles)
 % hObject    handle to Delete_Point (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+global pts;
+global h1;
+global h0;
+global flag_2;
+if(flag_2)
 pts = deleteP(pts);
     %if(size(pts,2)<2)
      %   msgbox("line segement <2, cannot delete");
@@ -827,12 +856,15 @@ pts = deleteP(pts);
     end
 
     h1 = plot(c(1, :), c(2, :), '-r');
-
-% --- Executes on button press in Start_Over.
+end
+% done
 function Start_Over_Callback(hObject, eventdata, handles)
 % hObject    handle to Start_Over (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+  global flag;
+  global flag_2;
+if(flag_2)
     handle_fig = figure(1);
     close(handle_fig);
     filename = strcat('frame',num2str(frames_num),'.jpg');
@@ -840,13 +872,23 @@ function Start_Over_Callback(hObject, eventdata, handles)
     
     SeperateView(I);
     flag =1;
-
-% --- Executes on button press in Save_Curve.
+end
+% done
 function Save_Curve_Callback(hObject, eventdata, handles)
 % hObject    handle to Save_Curve (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-stack = pushStack({pts},stack);
+global TM;
+global stack;
+global flag;
+global counter;
+global leg_counter;
+global data;
+global flag_2;
+
+if(flag_2)
+if(TM==false)
+    stack = pushStack({pts},stack);
     flag=1;
     counter = counter + 1;
     leg_counter=leg_counter+1;
@@ -865,13 +907,49 @@ stack = pushStack({pts},stack);
         data(counter,2 )= leg_counter;
         data(counter,i+2) =pts(2,i);
     end
-    global bool;
-    global uitable_handle
-    if(isvalid(uitable_handle)==1)
     
-    set(uitable_handle,'data',data);
+    
+        if(isvalid(uitable_handle)==1)
+    
+            set(uitable_handle,'data',data);
+        end
+    
+    flag_2 =0;
+    
+    else
+        
+         h = findall(0,'tag','frame_numbox');
+        frame_num = get(h,'String');
+        h = findall(0,'tag','leg_numbox');
+        leg_num = get(h,'String');
+        for ii =1:size(data,1)
+            if(data(ii,1)==str2num(frame_num) && data(ii,2)==str2num(leg_num))
+                data(ii,:)=0;
+                data(ii+1,:)=0;
+                for i = 1:size(pts,2)
+                    data(ii,1) = frames_num;
+                    data(ii,2 )= str2num(leg_num);
+                    data(ii,i+2) =pts(1,i);
+                end
+    
+                
+                for i = 1:size(pts,2)
+                    data(ii+1,1) = frames_num;
+                    data(ii+1,2 )= str2num(leg_num);
+                    data(ii+1,i+2) =pts(2,i);
+                end
+                break;
+            end
+        end
+        TM=false;
+        
+            if(isvalid(uitable_handle)==1)
+    
+                set(uitable_handle,'data',data);
+            end
+        
     end
-
+end
 % --- Executes on button press in Data_Window.
 function Data_Window_Callback(hObject, eventdata, handles)
 % hObject    handle to Data_Window (see GCBO)
@@ -889,3 +967,46 @@ function Drag_Point_Callback(hObject, eventdata, handles)
 % hObject    handle to Drag_Point (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+global pts;
+global h1;
+global h0;
+global flag_2;
+if(flag_2)
+ if (canManipulatePts)
+       
+        pts = reposition(pts); 
+        if not(isempty(h1))
+            delete(h1);
+        end
+        if not(isempty(h0))
+            delete(h0);
+        end
+        x = pts(1, :);
+        y = pts(2, :);
+        hold on;
+       
+            h0 = plot(x, y, 'b-o');
+
+        
+    hold on;
+
+    % Allocate Memory for curve
+    stepSize = 0.01; % hundreds pts + 1
+    u = 0: stepSize: 1;
+    numOfU = length(u);
+    c = zeros(2, numOfU);
+
+    % Iterate over curve and apply deCasteljau
+    numOfPts = length(x);
+    pts = [x; y];
+    
+    for i = 1: numOfU
+        ui = u(i);
+        c(:, i) = deCasteljau(ui, pts, numOfPts, numOfPts);
+    end
+   
+    h1 = plot(c(1, :), c(2, :), '-r');
+
+  end
+    hold on;
+end
