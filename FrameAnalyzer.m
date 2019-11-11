@@ -29,26 +29,6 @@ function varargout = FrameAnalyzer_OutputFcn(hObject, eventdata, handles)
 
 varargout{1} = handles.output;
 
-
-
-function NameBox_Callback(hObject, eventdata, handles)
-
-
-function NameBox_CreateFcn(hObject, eventdata, handles)
-
-
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-function checkFigureNumber()
-    h = findobj('type','figure');
-    n= length(h);
-    if(n==1)
-        figure(1);
-        return;
-
-    end
-
 %this function for the open video(initialization button)
 function initial_but_Callback(hObject, eventdata, handles)
 
@@ -80,14 +60,15 @@ leg_counter =0;
 frames_num =1;
 counter =0;
 
+updatePM(0);
 
- 
-    frames_path = video2frame(filePath,folderPath);
+frames_path = video2frame(filePath,folderPath);
    
 frames_num =1;
 filename = strcat('frame',num2str(frames_num),'.jpg');
 set(handles.frame_numbox,'String',num2str(frames_num));
-set(handles.leg_numbox,'String',num2str(0));
+
+
 I=imread(fullfile(frames_path,filename));
 
 % function start here
@@ -200,8 +181,8 @@ global frames_num;
     end
 counter = counter - 1;
     leg_counter=leg_counter-1;
-    h = findall(0,'tag','leg_numbox');
-    set(h,'String',num2str(leg_counter));
+    
+    updatePM(leg_counter);
     
     for i = 1:size(pts,2)
         data(counter,1) = frames_num;
@@ -244,24 +225,25 @@ global stack
 global listy
 global TM
 h_box = findall(0,'tag','frame_numbox');
-frames_num= str2num(get(h_box,'String'));
+tmp = get(h_box,'String');
+frames_num= str2num(tmp{1});
 global leg_counter;
 global data;
 global uitable_handle
 
 global canManipulatePts;
 %reopen the frame
-if((strcmp(key_press,'x')||strcmp(key_press,'X'))&&flag_2)
-    handle_fig = figure(1);
-    close(handle_fig);
-    filename = strcat('frame',num2str(frames_num),'.jpg');
-    I=imread(fullfile(frames_path,filename));
-    
-    SeperateView(I);
-    flag =1;
-end
-% redo
-if((strcmp(key_press,'z')||strcmp(key_press,'Z'))&&flag_2)
+% if((strcmp(key_press,'x')||strcmp(key_press,'X'))&&flag_2)
+%     handle_fig = figure(1);
+%     close(handle_fig);
+%     filename = strcat('frame',num2str(frames_num),'.jpg');
+%     I=imread(fullfile(frames_path,filename));
+%     
+%     SeperateView(I);
+%     flag =1;
+% end
+% undo
+if((strcmp(key_press,'b')||strcmp(key_press,'B'))&&flag_2)
     [stack,p] = popStack(stack);
     handle_fig = figure(1);
     close(handle_fig);
@@ -286,14 +268,14 @@ if((strcmp(key_press,'z')||strcmp(key_press,'Z'))&&flag_2)
     
 end
 %save
-if((strcmp(key_press,'s')||strcmp(key_press,'S'))&&flag_2)
+if((strcmp(key_press,'F')||strcmp(key_press,'f'))&&flag_2)
     if(TM==false)
     stack = pushStack({pts},stack);
     flag=1;
     counter = counter + 1;
     leg_counter=leg_counter+1;
-    h = findall(0,'tag','leg_numbox');
-    set(h,'String',num2str(leg_counter));
+    
+    updatePM(leg_counter);
     
     for i = 1:size(pts,2)
         data(counter,1) = frames_num;
@@ -308,20 +290,24 @@ if((strcmp(key_press,'s')||strcmp(key_press,'S'))&&flag_2)
         data(counter,i+2) =pts(2,i);
     end
     
-    
+     try
         if(isvalid(uitable_handle)==1)
     
             set(uitable_handle,'data',data);
         end
-    
+     catch
+     end
+         
     flag_2 =0;
     
     else
-        display(11111);
+        
          h = findall(0,'tag','frame_numbox');
-        frame_num = get(h,'String');
-        h = findall(0,'tag','leg_numbox');
-        leg_num = get(h,'String');
+         tmp = get(h,'String');
+        frame_num = tmp{1};
+        h = findall(0,'tag','PM');
+        tmp= get(h,'String');
+        leg_num = tmp{1};%damn
         for ii =1:size(data,1)
             if(data(ii,1)==str2num(frame_num) && data(ii,2)==str2num(leg_num))
                 data(ii,:)=0;
@@ -349,10 +335,11 @@ if((strcmp(key_press,'s')||strcmp(key_press,'S'))&&flag_2)
             end
         
     end
+    updatePM(leg_counter);
 end
     
 %next frame
-if((strcmp(key_press,'d')||strcmp(key_press,'D'))&&flag_2)
+if((strcmp(key_press,'x')||strcmp(key_press,'X')))
     stack = {};
     handle_fig = figure(1);
     close(handle_fig);
@@ -360,16 +347,18 @@ if((strcmp(key_press,'d')||strcmp(key_press,'D'))&&flag_2)
     leg_counter = 1;
     h = findall(0,'tag','frame_numbox');
     set(h,'String',num2str(frames_num));
-    h = findall(0,'tag','leg_numbox');
-    set(h,'String',num2str(leg_counter));
+    
+    updatePM(leg_counter);
     filename = strcat('frame',num2str(frames_num),'.jpg');
     I=imread(fullfile(frames_path,filename));
     
     SeperateView(I);
     flag =1;
+    figure(1);
 end
 %previous frame
-if ((strcmp(key_press,'a')||strcmp(key_press,'A'))&&flag_2)
+if ((strcmp(key_press,'z')||strcmp(key_press,'Z')))
+    updatePM(0);
     stack={};
     if(frames_num==1)
         msgbox("No previous frame");
@@ -382,17 +371,17 @@ if ((strcmp(key_press,'a')||strcmp(key_press,'A'))&&flag_2)
     leg_counter=1;
     h = findall(0,'tag','frame_numbox');
     set(h,'String',num2str(frames_num));
-    h = findall(0,'tag','leg_numbox');
-    set(h,'String',num2str(leg_counter));
+    
+    updatePM(leg_counter);
     filename = strcat('frame',num2str(frames_num),'.jpg');
     I=imread(fullfile(frames_path,filename));
     
     SeperateView(I);
     flag =1;
-   
+    figure(1);
 end
 %drag points
-if((strcmp(key_press,'r')||strcmp(key_press,'R'))&&flag_2)
+if((strcmp(key_press,'a')||strcmp(key_press,'A'))&&flag_2)
     if (canManipulatePts)
        
         pts = reposition(pts); 
@@ -433,7 +422,11 @@ if((strcmp(key_press,'r')||strcmp(key_press,'R'))&&flag_2)
     
 end
 % click an edge and make extra points
-if((strcmp(key_press,'e')||strcmp(key_press,'E'))&&flag_2)
+if(strcmp(key_press,'o')||strcmp(key_press,'O'))
+
+[bool,uitable_handle] = SetUitable(data)
+end
+if((strcmp(key_press,'s')||strcmp(key_press,'S'))&&flag_2)
     if (canManipulatePts)
        
         pts = reposition_e(pts); 
@@ -470,7 +463,7 @@ if((strcmp(key_press,'e')||strcmp(key_press,'E'))&&flag_2)
  
 end
 %delete point
-if((strcmp(key_press,'f')||strcmp(key_press,'F'))&&flag_2)
+if((strcmp(key_press,'h')||strcmp(key_press,'H'))&&flag_2)
     
    pts = deleteP(pts);
     %if(size(pts,2)<2)
@@ -585,10 +578,11 @@ global TM
 ctf={};
 count=1;
 frame_num = get(handles.frame_numbox,'String');
-leg_num = get(handles.leg_numbox,'String');
+leg_num = str2num(get(handles.PM,'String'))
+%leg_num = str2num(get(handles.leg_numbox,'String'));
 
 key_press = get(gcf,'currentKey');
-if(strcmp(key_press,'return'))
+%if(strcmp(key_press,'return'))
     for n =0:(size(data,1)/2-1)
         if(abs(data(2*n+1,1)-str2num(frame_num))<0.01)
             
@@ -609,10 +603,11 @@ if(strcmp(key_press,'return'))
     end
     if(leg_num>size(ctf,2))
         msgbox(',leg number not in boundary');
-        h = findall(0,'tag','leg_numbox');
-        set(h,'String',num2str(size(ctf,2)));
+
+        updatePM(size(ctf,2));%damn
         return;
     end
+    display('598');
     handle_fig = figure(1);
     close(handle_fig);
     filename = strcat('frame',num2str(frames_num),'.jpg');
@@ -621,7 +616,7 @@ if(strcmp(key_press,'return'))
     SeperateView(I);
     figure(1);
     for i =1:size(ctf,2)
-        if(i~=str2num(leg_num))
+        if(i~=(leg_num))
         paint(ctf{i},'none');
         else
             paint(ctf{i},'-c');
@@ -629,9 +624,9 @@ if(strcmp(key_press,'return'))
          
     end
 
-    pts = ctf{str2num(leg_num)};
+    pts = ctf{(leg_num)};
     TM= true;
-end
+%end
 canManipulatePts = true;
 global flag_2;
 flag_2 =1; %?????
@@ -658,14 +653,13 @@ stack={};
     leg_counter=1;
     h = findall(0,'tag','frame_numbox');
     set(h,'String',num2str(frames_num));
-    h = findall(0,'tag','leg_numbox');
-    set(h,'String',num2str(leg_counter));
+    
+    updatePM(leg_counter);
     filename = strcat('frame',num2str(frames_num),'.jpg');
     I=imread(fullfile(frames_path,filename));
     
     SeperateView(I);
-
-    
+   
 function next_but_Callback(hObject, eventdata, handles)
 stack = {};
     handle_fig = figure(1);
@@ -674,8 +668,8 @@ stack = {};
     leg_counter = 1;
     h = findall(0,'tag','frame_numbox');
     set(h,'String',num2str(frames_num));
-    h = findall(0,'tag','leg_numbox');
-    set(h,'String',num2str(leg_counter));
+    
+    updatePM(leg_counter);
     filename = strcat('frame',num2str(frames_num),'.jpg');
     I=imread(fullfile(frames_path,filename));
     
@@ -710,8 +704,8 @@ if(strcmp(key_press,'return'))
     I=imread(fullfile(frames_path,filename));
     SeperateView(I);
     leg_counter =0;
-    h = findall(0,'tag','leg_numbox');
-    set(h,'String',num2str(leg_counter));
+   
+    updatePM(leg_counter);
 end
 
 
@@ -740,6 +734,7 @@ frames_num =1;
 counter =0;
 
 global uitable_handle;
+updatePM(0);
 global bool;
 bool =0;
 data =[];
@@ -748,7 +743,7 @@ data =[];
 frames_num =1;
 filename = strcat('frame',num2str(frames_num),'.jpg');
 set(handles.frame_numbox,'String',num2str(frames_num));
-set(handles.leg_numbox,'String',num2str(0));
+updatePM(leg_counter);
 I=imread(fullfile(frames_path,filename));
 
 % function start here
@@ -892,8 +887,8 @@ if(TM==false)
     flag=1;
     counter = counter + 1;
     leg_counter=leg_counter+1;
-    h = findall(0,'tag','leg_numbox');
-    set(h,'String',num2str(leg_counter));
+    
+    updatePM(leg_counter);
     
     for i = 1:size(pts,2)
         data(counter,1) = frames_num;
@@ -920,8 +915,9 @@ if(TM==false)
         
          h = findall(0,'tag','frame_numbox');
         frame_num = get(h,'String');
-        h = findall(0,'tag','leg_numbox');
-        leg_num = get(h,'String');
+        h = findall(0,'tag','PM');
+        tmp = get(h,'String');
+        leg_num = tmp{1};%damn
         for ii =1:size(data,1)
             if(data(ii,1)==str2num(frame_num) && data(ii,2)==str2num(leg_num))
                 data(ii,:)=0;
@@ -1010,3 +1006,126 @@ if(flag_2)
   end
     hold on;
 end
+
+
+% --- Executes on selection change in PM.
+function PM_Callback(hObject, eventdata, handles)
+% hObject    handle to PM (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns PM contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from PM
+global pts;
+global data;
+global canManipulatePts;
+global frames_num;
+global frames_path;
+global ctf
+global leg_num
+global TM
+ctf={};
+count=1;
+frame_num = get(handles.frame_numbox,'String');
+idx = (get(handles.PM,'value'));
+items = get(handles.PM,'string');
+leg_num = str2num(items{idx});
+display(leg_num);
+%leg_num = str2num(get(handles.leg_numbox,'String'));
+
+key_press = get(gcf,'currentKey');
+%if(strcmp(key_press,'return'))
+    for n =0:(size(data,1)/2-1)
+        if(abs(data(2*n+1,1)-str2num(frame_num))<0.01)
+            
+                tmp=[];
+                
+                for i = 1:size(data,2)-2
+                    if(data(2*n+1,i+2)==0&&data(2*n+1+1,i+2)==0)
+                        continue;
+                    end
+                    
+                    tmp(1,i) = data(2*n+1,i+2);
+                    
+                    tmp(2,i) = data(2*n+2,i+2);
+                end
+                    ctf{count}=tmp;
+                    count = count+1;  
+        end
+    end
+    if(leg_num>size(ctf,2))
+        msgbox(',leg number not in boundary');
+        
+        updatePM(size(ctf,2));
+        return;
+    end
+    
+    handle_fig = figure(1);
+    close(handle_fig);
+    filename = strcat('frame',num2str(frames_num),'.jpg');
+    I=imread(fullfile(frames_path,filename));
+    
+    SeperateView(I);
+    figure(1);
+    for i =1:size(ctf,2)
+        if(i~=(leg_num))
+        paint(ctf{i},'none');
+        else
+            paint(ctf{i},'-c');
+        end
+         
+    end
+
+    pts = ctf{(leg_num)};
+    TM= true;
+%end
+canManipulatePts = true;
+global flag_2;
+flag_2 =1; %?????
+figure(1);
+
+% --- Executes during object creation, after setting all properties.
+function PM_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to PM (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+updatePM(0);
+
+function updatePM(leg_counter)
+    hh = findall(0,'tag','PM');
+    if(leg_counter ==0)
+        set(hh,'string','0');
+        set(hh,'value',1);
+        return;
+    end
+    display('111')
+    
+    popupList = {};
+    popupList{1} = leg_counter;
+    for i =1:leg_counter-1
+        if(leg_counter==1)
+            break;
+        end
+        popupList{i+1} = i;
+    end
+    set(hh, 'string', popupList);
+
+
+% --- Executes on button press in pushbutton15.
+function pushbutton15_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton15 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in pushbutton16.
+function pushbutton16_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton16 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
