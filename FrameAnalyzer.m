@@ -226,7 +226,7 @@ global listy
 global TM
 h_box = findall(0,'tag','frame_numbox');
 tmp = get(h_box,'String');
-frames_num= str2num(tmp{1});
+frames_num= str2num(tmp);
 global leg_counter;
 global data;
 global uitable_handle
@@ -243,7 +243,7 @@ global canManipulatePts;
 %     flag =1;
 % end
 % undo
-if((strcmp(key_press,'b')||strcmp(key_press,'B'))&&flag_2)
+if((strcmp(key_press,'b')||strcmp(key_press,'B')))
     [stack,p] = popStack(stack);
     handle_fig = figure(1);
     close(handle_fig);
@@ -304,7 +304,7 @@ if((strcmp(key_press,'F')||strcmp(key_press,'f'))&&flag_2)
         
          h = findall(0,'tag','frame_numbox');
          tmp = get(h,'String');
-        frame_num = tmp{1};
+        frame_num = tmp;
         h = findall(0,'tag','PM');
         tmp= get(h,'String');
         leg_num = tmp{1};%damn
@@ -531,7 +531,9 @@ end
 % you can change that to make it look better!
 function paint(pts,color)
 hold on;
-   
+    if(isempty(pts))
+        return;
+    end
     x = pts(1,:);
     y = pts(2,:);
     display(x);
