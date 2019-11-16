@@ -22,7 +22,7 @@ function varargout = Tobleron_GUI(varargin)
 
 % Edit the above text to modify the response to help Tobleron_GUI
 
-% Last Modified by GUIDE v2.5 15-Nov-2019 20:26:10
+% Last Modified by GUIDE v2.5 16-Nov-2019 15:21:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -86,9 +86,23 @@ else
 end
 
 function changeData(pts)
-global leg
+
 leg = PM_get();
 global data;
+if(isempty(pts))
+    length =size(data,2)
+
+    for i =1:length
+        if(leg==data(i,2))
+            data(i,:)=[];
+            data(i,:)=[];
+            break;
+        end
+        
+    end
+
+    return;
+end
 data(leg*2-1,3:size(data,2))=0;
 for i =1:size(pts,2)
     data(leg*2-1,2+i)= pts(1,i);
@@ -128,23 +142,14 @@ function updateData(pts)
 %     set(handles_uitable,'data',data);   
 %     counter = counter-2;
 % end
-function pts = getPts()
-    
-    [data,pointer] = getData();
-    leg = (pointer-1)/2;
-    if(isempty(data))
-        return;
-    end
-    x = data(leg*2-1,3:size(data,2));
-    y = data(leg*2,3:size(data,2))
-    pts = [x;y]
 
 function press(hObject, eventdata, handles)
 global h_blue;
 global h_red;
+
 key_press = get(gcf,'currentKey');
 if((strcmp(key_press,'a')||strcmp(key_press,'A')))
-    pts = getPts();
+    pts = PM_getPts();
     pts = reposition(pts); 
     if not(isempty(h_red))
        delete(h_red);
@@ -161,9 +166,10 @@ if((strcmp(key_press,'a')||strcmp(key_press,'A')))
     tmp_pts=draw(x,y);
     changeData(tmp_pts);
 end
- if((strcmp(key_press,'h')||strcmp(key_press,'H')))
+
+if((strcmp(key_press,'f')||strcmp(key_press,'F')))
     
-    pts = getPts(); 
+    pts = PM_getPts(); 
     pts = cleanPts(pts);
     pts = deleteP(pts);
     if not(isempty(h_red))
@@ -174,6 +180,9 @@ end
        delete(h_blue);
     end
     if(isempty(pts))
+        changeData(pts);
+        leg = PM_get();
+        updatePM(leg-1);
         return;
     end
        x = pts(1, :);
@@ -184,16 +193,89 @@ end
     tmp_pts=draw(x,y);
     changeData(tmp_pts);
 
- end
- 
-function [points]=cleanPts(pts)
-for i =1:size(pts,2)
-    if(pts(1,i)==pts(2,i)&&pts(1,i)==0)
-        continue;
-    end
-    points(1,i)=pts(1,i);
-    points(2,i)=pts(2,i);
 end
+if((strcmp(key_press,'s')||strcmp(key_press,'S')))
+    pts = PM_getPts(); 
+    pts = reposition_e(pts);
+    if not(isempty(h_red))
+       delete(h_red);
+    end
+    
+    if not(isempty(h_blue))
+       delete(h_blue);
+    end
+       x = pts(1, :);
+       y = pts(2, :);
+        
+    hold on;
+
+    tmp_pts=draw(x,y);
+    changeData(tmp_pts);
+    
+end
+if((strcmp(key_press,'g')||strcmp(key_press,'G')))
+        
+    hold on;
+
+    pts=[]
+    changeData(pts);
+    drawData();
+    
+end
+function drawData()
+    global frames_path;
+    [data,pointer] = getData();
+    leg = (pointer-1)/2;
+    
+    frames_num = getFramesNum();
+    filename = strcat('frame',num2str(frames_num),'.jpg');
+    I=imread(fullfile(frames_path,filename));
+    handle_fig = figure(1);
+    close(handle_fig);
+    SeperateView(I);
+    
+    global i;
+    current_leg = PM_get();
+    for i =1:leg
+        figure(1);
+        x = data(i*2-1,3:size(data,2));
+        y = data(i*2,3:size(data,2));
+        points =[x;y];
+        points = cleanPts(points);
+        hold on;
+%         draw(x,y);
+        if(i~=current_leg)
+            paint(points,'none');
+        else
+            paint(points,'-c');
+        end
+    end
+    
+
+
+
+function pts = PM_getPts()
+    [data,pointer] = getData();
+    leg = PM_get();
+    if(isempty(data))
+        return;
+    end
+    x = data(leg*2-1,3:size(data,2));
+    y = data(leg*2,3:size(data,2))
+    pts = [x;y]
+
+
+function pts = getPts()
+    
+    [data,pointer] = getData();
+    leg = (pointer-1)/2;
+    if(isempty(data))
+        return;
+    end
+    x = data(leg*2-1,3:size(data,2));
+    y = data(leg*2,3:size(data,2))
+    pts = [x;y]
+
 
 
 function SeperateView(I)
@@ -218,7 +300,7 @@ r = api.getVisibleImageRect();
 set(hIm,'ButtonDownFcn',@curve);
 set(hFig,'KeyPressFcn',@press);
 
-function [pts]=draw(x,y)
+function [points]=draw(x,y)
     global h_blue;
     h_blue = plot(x, y, 'b-o');
     global h_red
@@ -227,18 +309,53 @@ function [pts]=draw(x,y)
     u = 0: stepSize: 1;
     numOfU = length(u);
     c = zeros(2, numOfU);
-
+    global pts
     % Iterate over curve and apply deCasteljau
     numOfPts = length(x);
     pts = [x; y];
-    
+    pts= cleanPts(pts);
     for i = 1: numOfU
         ui = u(i);
         c(:, i) = deCasteljau(ui, pts, numOfPts, numOfPts);
     end
    
     h_red = plot(c(1, :), c(2, :), '-r');
+    points = pts;
+    
+function paint(pts,color)
+hold on;
+    if(isempty(pts))
+        return;
+    end
+    x = pts(1,:);
+    y = pts(2,:);
+    display(x);
+    display(y);
+    plot(x, y, 'g-o');
+    hold on;
 
+    % Allocate Memory for curve
+    stepSize = 0.01; % hundreds pts + 1
+    u = 0: stepSize: 1;
+    numOfU = length(u);
+    c = zeros(2, numOfU);
+
+    % Iterate over curve and apply deCasteljau
+    numOfPts = length(x);
+
+    for i = 1: numOfU
+        ui = u(i);
+        c(:, i) = deCasteljau(ui, pts, numOfPts, numOfPts);
+    end
+    
+    % Plot curve
+    %axis([0 1 0 1]);
+    if(strcmp(color,'none'))
+    plot(c(1, :), c(2, :), '-y');
+    else
+    plot(c(1, :), c(2, :), color);
+    end
+    
 function curve(~,~)
 % Init control polygon
 %figure;
@@ -254,10 +371,13 @@ y = y';
     pts= draw(x,y);
     hold on;
     updateData(pts);
-    leg = PM_get();
+    leg = PM_getMax();
     updatePM(leg+1);
     
+
+    
 function initial_but_Callback(hObject, eventdata, handles)
+global frames_path;
 [baseName, folder] = uigetfile('*.MOV');
 filePath = fullfile(folder, baseName)
  
@@ -316,6 +436,9 @@ function [num] = PM_get()
     num = leg_num
 
 function updatePM(leg_counter)
+
+global max
+
     hh = findall(0,'tag','PM');
     if(leg_counter ==0)
         set(hh,'string','0');
@@ -323,18 +446,48 @@ function updatePM(leg_counter)
         return;
     end
  
-    popupList = {};
-    popupList{1} = leg_counter;
-    for i =1:leg_counter-1
-        if(leg_counter==1)
-            break;
+    max = PM_getMax();
+%     if(leg_counter>=max)
+        popupList = {};
+        popupList{1} = leg_counter;
+        for i =1:leg_counter-1
+            if(leg_counter==1)
+                break;
+            end
+            popupList{i+1} = i;
         end
-        popupList{i+1} = i;
+        set(hh, 'string', popupList);
+%     else
+%         max =max+1;
+%         display('inside');
+%         popupList = {};
+%         popupList{1} = max;
+%         for i =1:max-1
+%             if(max==1)
+%                 break;
+%             end
+%             popupList{i+1} = i;
+%         end
+%         set(hh, 'string', popupList);
+%     end
+    
+function [maxi]=PM_getMax()
+global items
+    hh = findall(0,'tag','PM');
+    items = get(hh,'string');
+    
+
+    
+    if(isa(items,'cell'))
+        for i =1:size(items,2)
+            tmp{i}=str2num(items{i});
+        end
+        maxi = max([tmp{:}]);
+    else
+        maxi =0;
     end
-    set(hh, 'string', popupList);
-
-
 function OEF_Callback(hObject, eventdata, handles)
+global frames_path;
 global data;
 data =[];
 updatePM(0);
@@ -344,6 +497,7 @@ filename = strcat('frame',num2str(frames_num),'.jpg');
 set(handles.frame_numbox,'String',num2str(frames_num));
 updatePM(PM_get());
 I=imread(fullfile(folderPath,filename));
+frames_path= folderPath;
 SeperateView(I);
 
 function Add_Edge_Callback(hObject, eventdata, handles)
@@ -361,7 +515,12 @@ function pushbutton16_Callback(hObject, eventdata, handles)
 function pushbutton17_Callback(hObject, eventdata, handles)
 
 function PM_Callback(hObject, eventdata, handles)
-
+figure(1);
+global h_blue;
+global h_red;
+h_blue = [];
+h_red=[];
+drawData();
 function PM_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to PM (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
