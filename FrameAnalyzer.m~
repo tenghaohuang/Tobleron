@@ -746,7 +746,7 @@ frames_num =1;
 filename = strcat('frame',num2str(frames_num),'.jpg');
 set(handles.frame_numbox,'String',num2str(frames_num));
 updatePM(leg_counter);
-I=imread(fullfile(folderPath,filename));
+I=imread(fullfile(frames_path,filename));
 
 % function start here
 SeperateView(I);
