@@ -22,7 +22,7 @@ function varargout = Tobleron_GUI(varargin)
 
 % Edit the above text to modify the response to help Tobleron_GUI
 
-% Last Modified by GUIDE v2.5 16-Nov-2019 15:21:52
+% Last Modified by GUIDE v2.5 18-Nov-2019 12:20:47
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -86,14 +86,14 @@ else
 end
 
 function changeData(pts)
-
+frames_num = getFramesNum();
 leg = PM_get();
 global data;
 if(isempty(pts))
     length =size(data,2)
 
     for i =1:length
-        if(leg==data(i,2))
+        if(leg==data(i,2)&&frames_num==data(i,1))
             data(i,:)=[];
             data(i,:)=[];
             break;
@@ -134,19 +134,18 @@ function updateData(pts)
         data(pointer,i+2) =pts(2,i);
     end
     
-    
-    
-%     global uitable_handle;
-% if(isvalid(uitable_handle)==1)
-%     handles_uitable  = findall(0,'tag','uitable_handle');
-%     set(handles_uitable,'data',data);   
-%     counter = counter-2;
-% end
+    global uitable_handle;
+ if(isvalid(uitable_handle)==1)
+     
+     set(uitable_handle,'data',data);   
+
+ end
 
 function press(hObject, eventdata, handles)
 global h_blue;
 global h_red;
-
+global uitable_handle;
+global frames_path;
 key_press = get(gcf,'currentKey');
 if((strcmp(key_press,'a')||strcmp(key_press,'A')))
     pts = PM_getPts();
@@ -222,12 +221,62 @@ end
 if((strcmp(key_press,'g')||strcmp(key_press,'G')))
         
     hold on;
-
+max = PM_getMax();
+ct = PM_get();
+if(ct<max)
+    return;
+end
     pts=[]
     changeData(pts);
     
     drawData();
     
+end
+if((strcmp(key_press,'q')||strcmp(key_press,'Q')))
+    if ~(isvalid(uitable_handle))
+        [data,pointer] = getData();
+        [bool,uitable_handle] = SetUitable(data)
+        figure(1);
+    end
+end
+if((strcmp(key_press,'x')||strcmp(key_press,'X')))
+    frames_num = getFramesNum();
+    
+    handle_fig = figure(1);
+    close(handle_fig);
+    frames_num = frames_num +1;
+    leg_counter = 1;
+    h = findall(0,'tag','frame_numbox');
+    set(h,'String',num2str(frames_num));
+    
+    updatePM(leg_counter);
+    filename = strcat('frame',num2str(frames_num),'.jpg');
+    I=imread(fullfile(frames_path,filename));
+    
+    SeperateView(I);
+    updatePM(0);
+end
+if((strcmp(key_press,'z')||strcmp(key_press,'Z')))
+    frames_num = getFramesNum();
+    
+    if(frames_num==1)
+        msgbox("No previous frame");
+        return
+    end
+        
+    handle_fig = figure(1);
+    close(handle_fig);
+    frames_num = frames_num -1;
+    leg_counter=1;
+    h = findall(0,'tag','frame_numbox');
+    set(h,'String',num2str(frames_num));
+    
+    updatePM(leg_counter);
+    filename = strcat('frame',num2str(frames_num),'.jpg');
+    I=imread(fullfile(frames_path,filename));
+    
+    SeperateView(I);
+    updatePM(0);
 end
 function drawData()
     global frames_path;
@@ -262,12 +311,20 @@ function drawData()
 
 
 function pts = PM_getPts()
+    frames_num = getFramesNum();
     [data,pointer] = getData();
     leg = PM_get();
     if(isempty(data))
         return;
     end
-    x = data(leg*2-1,3:size(data,2));
+    begin =0;
+    for i =1:size(data,2)
+        if(data(i,1)==frames_num)
+            begin =i-1;
+            break;
+        end
+    end
+    x = data(begin+leg*2-1,3:size(data,2));
     y = data(leg*2,3:size(data,2))
     pts = [x;y]
 
@@ -404,11 +461,17 @@ I=imread(fullfile(frames_path,filename));
 
 % function start here
 SeperateView(I);
+global data;
+data=[];
+
 
 
 
 function export_but_Callback(hObject, eventdata, handles)
-global uitable_handle
+global data;
+data = [];
+global uitable_handle;
+[bool,uitable_handle] = SetUitable(data)
 data = get(uitable_handle,'Data');
  name = datestr(now);
  FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
@@ -430,9 +493,43 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 function previous_but_Callback(hObject, eventdata, handles)
-
+    frames_num = getFramesNum();
+    global frames_path;
+    if(frames_num==1)
+        msgbox("No previous frame");
+        return
+    end
+        
+    handle_fig = figure(1);
+    close(handle_fig);
+    frames_num = frames_num -1;
+    leg_counter=1;
+    h = findall(0,'tag','frame_numbox');
+    set(h,'String',num2str(frames_num));
+    
+    updatePM(leg_counter);
+    filename = strcat('frame',num2str(frames_num),'.jpg');
+    I=imread(fullfile(frames_path,filename));
+    
+    SeperateView(I);
+    updatePM(0);
 function next_but_Callback(hObject, eventdata, handles)
-
+    frames_num = getFramesNum();
+    global frames_path;
+    handle_fig = figure(1);
+    close(handle_fig);
+    frames_num = frames_num +1;
+    leg_counter = 1;
+    h = findall(0,'tag','frame_numbox');
+    set(h,'String',num2str(frames_num));
+    
+    updatePM(leg_counter);
+    filename = strcat('frame',num2str(frames_num),'.jpg');
+    I=imread(fullfile(frames_path,filename));
+    
+    SeperateView(I);
+    updatePM(0);
+  
 function [num] = PM_get()
     global items
     global idx
@@ -488,6 +585,7 @@ function OEF_Callback(hObject, eventdata, handles)
 global frames_path;
 global data;
 data =[];
+
 updatePM(0);
 folderPath = uigetdir();
 frames_num =1;
@@ -498,21 +596,111 @@ I=imread(fullfile(folderPath,filename));
 frames_path= folderPath;
 SeperateView(I);
 
-function Add_Edge_Callback(hObject, eventdata, handles)
+function realAdd_Point_Callback(hObject, eventdata, handles)
+global h_blue;
+global h_red;
+global uitable_handle;
+global frames_path;
+figure(1);
 
+    pts = PM_getPts(); 
+    pts = reposition_e(pts);
+    pts = cleanPts(pts);
+    if not(isempty(h_red))
+       delete(h_red);
+    end
+    
+    if not(isempty(h_blue))
+       delete(h_blue);
+    end
+       x = pts(1, :);
+       y = pts(2, :);
+        
+    hold on;
+
+    tmp_pts=draw(x,y);
+    tmp_pts= cleanPts(tmp_pts);
+    changeData(tmp_pts);
+
+key_press = get(gcf,'currentKey');
 function Delete_Point_Callback(hObject, eventdata, handles)
+global h_blue;
+global h_red;
+global uitable_handle;
+global frames_path;
+figure(1);
+    pts = PM_getPts(); 
+    pts = cleanPts(pts);
+    pts = deleteP(pts);
+    pts = cleanPts(pts);
+    if not(isempty(h_red))
+       delete(h_red);
+    end
+    
+    if not(isempty(h_blue))
+       delete(h_blue);
+    end
+    if(isempty(pts))
+        changeData(pts);
+        leg = PM_get();
+        updatePM(leg-1);
+        return;
+    end
+       x = pts(1, :);
+       y = pts(2, :);
+        
+    hold on;
 
+    tmp_pts=draw(x,y);
+    tmp_pts= cleanPts(tmp_pts);
+    changeData(tmp_pts);
 function Start_Over_Callback(hObject, eventdata, handles)
-
+global h_blue;
+global h_red;
+global uitable_handle;
+global frames_path;
+figure(1);
+    hold on;
+max = PM_getMax();
+ct = PM_get();
+if(ct<max)
+    return;
+end
+    pts=[]
+    changeData(pts);
+    updatePM(ct-1);
+    drawData();
+    
 function Data_Window_Callback(hObject, eventdata, handles)
-
+global uitable_handle;
+[data,pointer] = getData();
 [bool,uitable_handle] = SetUitable(data)
 
 function Drag_Point_Callback(hObject, eventdata, handles)
+global h_blue;
+global h_red;
+global uitable_handle;
+global frames_path;
+figure(1);
 
-function pushbutton16_Callback(hObject, eventdata, handles)
+    pts = PM_getPts();
+    pts = reposition(pts); 
+    pts = cleanPts(pts);
+    if not(isempty(h_red))
+       delete(h_red);
+    end
+    
+    if not(isempty(h_blue))
+       delete(h_blue);
+    end
+       x = pts(1, :);
+       y = pts(2, :);
+        
+    hold on;
 
-function pushbutton17_Callback(hObject, eventdata, handles)
+    tmp_pts=draw(x,y);
+    tmp_pts= cleanPts(tmp_pts);
+    changeData(tmp_pts);
 
 function PM_Callback(hObject, eventdata, handles)
 figure(1);
@@ -540,3 +728,7 @@ set(h, 'String',a);
 function Data_Window_CreateFcn(hObject, eventdata, handles)
 global data;
 data = [];
+global uitable_handle;
+[bool,uitable_handle,fig] = SetUitable(data)
+delete(fig);
+
