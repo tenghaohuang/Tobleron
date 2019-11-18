@@ -134,12 +134,14 @@ function updateData(pts)
         data(pointer,i+2) =pts(2,i);
     end
     
-    global uitable_handle;
- if(isvalid(uitable_handle)==1)
-     
-     set(handles_uitable,'data',data);   
-
- end
+    
+    
+%     global uitable_handle;
+% if(isvalid(uitable_handle)==1)
+%     handles_uitable  = findall(0,'tag','uitable_handle');
+%     set(handles_uitable,'data',data);   
+%     counter = counter-2;
+% end
 
 function press(hObject, eventdata, handles)
 global h_blue;
@@ -503,7 +505,7 @@ function Delete_Point_Callback(hObject, eventdata, handles)
 function Start_Over_Callback(hObject, eventdata, handles)
 
 function Data_Window_Callback(hObject, eventdata, handles)
-[data,pointer] = getData();
+
 [bool,uitable_handle] = SetUitable(data)
 
 function Drag_Point_Callback(hObject, eventdata, handles)
