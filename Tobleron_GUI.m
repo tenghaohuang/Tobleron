@@ -103,14 +103,22 @@ if(isempty(pts))
 
     return;
 end
-data(leg*2-1,3:size(data,2))=0;
+begin =0;
+    for i =1:size(data,1)
+        if(data(i,1)==frames_num)
+            begin =i-1;
+            break;
+        end
+    end
+    
+data(begin+leg*2-1,3:size(data,2))=0;
 for i =1:size(pts,2)
-    data(leg*2-1,2+i)= pts(1,i);
+    data(begin+leg*2-1,2+i)= pts(1,i);
 end
 % data(leg*2-1,3:size(pts,2))=pts(1,:);
-data(leg*2,3:size(data,2))=0;
+data(begin+leg*2,3:size(data,2))=0;
 for i =1:size(pts,2)
-    data(leg*2,2+i)= pts(2,i);
+    data(begin+leg*2,2+i)= pts(2,i);
 end
 % data(leg*2,3:size(pts,2))=pts(2,:);
 
@@ -227,9 +235,10 @@ if(ct<max)
     return;
 end
     pts=[]
+    
     changeData(pts);
     updatePM(ct-1);
-    drawData();
+    drawData('startover');
     
 end
 if((strcmp(key_press,'q')||strcmp(key_press,'Q')))
@@ -278,24 +287,42 @@ if((strcmp(key_press,'z')||strcmp(key_press,'Z')))
     SeperateView(I);
     updatePM(0);
 end
-function drawData()
+function drawData(startover)
+    global leg;
     global frames_path;
+        global begin;
     [data,pointer] = getData();
-    leg = (pointer-1)/2;
-    
+    leg = PM_getMax();
+
     frames_num = getFramesNum();
     filename = strcat('frame',num2str(frames_num),'.jpg');
     I=imread(fullfile(frames_path,filename));
     handle_fig = figure(1);
     close(handle_fig);
     SeperateView(I);
-    
-    global i;
+    if(leg==0)
+        return;
+    end
+    if(isempty(data))
+        return;
+    end
+    begin =0;
+    for i =1:size(data,1)
+        if(data(i,1)==frames_num)
+            begin =i-1;
+            break;
+        end
+    end
+
+    global points;
+    global watch;
     current_leg = PM_get();
+
     for i =1:leg
+        watch = i;
         figure(1);
-        x = data(i*2-1,3:size(data,2));
-        y = data(i*2,3:size(data,2));
+        x = data(begin+i*2-1,3:size(data,2));
+        y = data(begin+i*2,3:size(data,2));
         points =[x;y];
         points = cleanPts(points);
         hold on;
@@ -318,7 +345,7 @@ function pts = PM_getPts()
         return;
     end
     begin =0;
-    for i =1:size(data,2)
+    for i =1:size(data,1)
         if(data(i,1)==frames_num)
             begin =i-1;
             break;
@@ -658,7 +685,7 @@ end
     pts=[]
     changeData(pts);
     updatePM(ct-1);
-    drawData();
+    drawData('startover');
     
 function Data_Window_Callback(hObject, eventdata, handles)
 global uitable_handle;

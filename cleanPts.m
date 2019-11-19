@@ -1,4 +1,8 @@
 function [points]=cleanPts(pts)
+if(isempty(pts))
+    points =[];
+    return;
+end
     len = size(pts,2);
     counter =1;
     global index;
