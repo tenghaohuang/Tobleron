@@ -238,7 +238,7 @@ end
     
     changeData(pts);
     updatePM(ct-1);
-    drawData();
+    drawData('startover');
     
 end
 if((strcmp(key_press,'q')||strcmp(key_press,'Q')))
@@ -288,20 +288,21 @@ if((strcmp(key_press,'z')||strcmp(key_press,'Z')))
     updatePM(0);
 end
 function drawData(startover)
-
+    global leg;
     global frames_path;
-        global begin;
+    global begin;
     [data,pointer] = getData();
-    leg = (pointer-1)/2;
-    if(startover=='startover')
-        leg =leg-1;
-    end
+    leg = PM_getMax();
+
     frames_num = getFramesNum();
     filename = strcat('frame',num2str(frames_num),'.jpg');
     I=imread(fullfile(frames_path,filename));
     handle_fig = figure(1);
     close(handle_fig);
     SeperateView(I);
+    if(leg==0)
+        return;
+    end
     if(isempty(data))
         return;
     end
@@ -316,6 +317,7 @@ function drawData(startover)
     global points;
     global watch;
     current_leg = PM_get();
+
     for i =1:leg
         watch = i;
         figure(1);
@@ -507,13 +509,14 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 function previous_but_Callback(hObject, eventdata, handles)
+    [data,pointer] = getData();
     frames_num = getFramesNum();
     global frames_path;
     if(frames_num==1)
         msgbox("No previous frame");
         return
     end
-        
+       
     handle_fig = figure(1);
     close(handle_fig);
     frames_num = frames_num -1;
@@ -527,7 +530,22 @@ function previous_but_Callback(hObject, eventdata, handles)
     
     SeperateView(I);
     updatePM(0);
+    if(isempty(data))
+        return;
+    end
+    for i =1:size(data,1)
+        if(data(i,1)==frames_num)
+            drawData();
+        end
+    end
+function [num]=getLegNum()
+    for i =1:size(data,1)
+        if(data(i,1)==frames_num)
+            
+        end
+    end
 function next_but_Callback(hObject, eventdata, handles)
+    [data,pointer] = getData();
     frames_num = getFramesNum();
     global frames_path;
     handle_fig = figure(1);
@@ -543,6 +561,14 @@ function next_but_Callback(hObject, eventdata, handles)
     
     SeperateView(I);
     updatePM(0);
+    if(isempty(data))
+        return;
+    end
+    for i =1:size(data,1)
+        if(data(i,1)==frames_num)
+            drawData();
+        end
+    end
   
 function [num] = PM_get()
     global items
@@ -683,7 +709,7 @@ end
     pts=[]
     changeData(pts);
     updatePM(ct-1);
-    drawData();
+    drawData('startover');
     
 function Data_Window_Callback(hObject, eventdata, handles)
 global uitable_handle;

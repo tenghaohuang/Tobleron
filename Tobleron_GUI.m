@@ -290,7 +290,7 @@ end
 function drawData(startover)
     global leg;
     global frames_path;
-        global begin;
+    global begin;
     [data,pointer] = getData();
     leg = PM_getMax();
 
@@ -313,7 +313,7 @@ function drawData(startover)
             break;
         end
     end
-
+    display(begin);
     global points;
     global watch;
     current_leg = PM_get();
@@ -509,13 +509,14 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 function previous_but_Callback(hObject, eventdata, handles)
+    [data,pointer] = getData();
     frames_num = getFramesNum();
     global frames_path;
     if(frames_num==1)
         msgbox("No previous frame");
         return
     end
-        
+       
     handle_fig = figure(1);
     close(handle_fig);
     frames_num = frames_num -1;
@@ -529,7 +530,40 @@ function previous_but_Callback(hObject, eventdata, handles)
     
     SeperateView(I);
     updatePM(0);
+
+    [legnum,begin] = getNums(frames_num);
+    if(begin ==-1)
+        return;
+    end
+    updatePM(legnum);
+    drawData();
+    
+function [num,begin]=getNums(framenum)
+    [data,pointer] = getData();
+    if(isempty(data))
+        return;
+    end
+    begin =-1;
+    for i =1:size(data,1)
+        if(data(i,1)==framenum)
+            begin = max(1,i-1);
+            break;
+        end
+    end
+    if(begin ==-1)
+        num =0;
+        return;
+    end
+    count=0;
+    for i =begin:size(data,1)
+        if(data(i,1)==framenum)
+            count = count+1;
+        end
+    end
+    num = count/2;
+    
 function next_but_Callback(hObject, eventdata, handles)
+    [data,pointer] = getData();
     frames_num = getFramesNum();
     global frames_path;
     handle_fig = figure(1);
@@ -545,6 +579,12 @@ function next_but_Callback(hObject, eventdata, handles)
     
     SeperateView(I);
     updatePM(0);
+    [legnum,begin] = getNums(frames_num);
+    if(begin ==-1)
+        return;
+    end
+    updatePM(legnum);
+    drawData();
   
 function [num] = PM_get()
     global items
