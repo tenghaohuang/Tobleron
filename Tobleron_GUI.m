@@ -22,7 +22,7 @@ function varargout = Tobleron_GUI(varargin)
 
 % Edit the above text to modify the response to help Tobleron_GUI
 
-% Last Modified by GUIDE v2.5 18-Nov-2019 12:20:47
+% Last Modified by GUIDE v2.5 21-Nov-2019 16:43:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -301,6 +301,7 @@ function drawData(startover)
     close(handle_fig);
     SeperateView(I);
     if(leg==0)
+        
         return;
     end
     if(isempty(data))
@@ -787,4 +788,3 @@ data = [];
 global uitable_handle;
 [bool,uitable_handle,fig] = SetUitable(data)
 delete(fig);
-
