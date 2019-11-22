@@ -89,6 +89,7 @@ function changeData(pts)
 frames_num = getFramesNum();
 leg = PM_get();
 global data;
+global uitable_handle;
 if(isempty(pts))
     length =size(data,2)
 
@@ -101,6 +102,11 @@ if(isempty(pts))
         
     end
 
+    if(isvalid(uitable_handle)==1)
+     
+        set(uitable_handle,'data',data);   
+
+    end
     return;
 end
 begin =0;
@@ -119,6 +125,12 @@ end
 data(begin+leg*2,3:size(data,2))=0;
 for i =1:size(pts,2)
     data(begin+leg*2,2+i)= pts(2,i);
+end
+
+if(isvalid(uitable_handle)==1)
+     
+     set(uitable_handle,'data',data);   
+
 end
 % data(leg*2,3:size(pts,2))=pts(2,:);
 
