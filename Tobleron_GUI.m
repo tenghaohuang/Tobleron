@@ -133,7 +133,16 @@ if(isvalid(uitable_handle)==1)
 
 end
 % data(leg*2,3:size(pts,2))=pts(2,:);
+function newStack = pushStack(a,newValue)
+newStack = [a,newValue];
 
+function [newStack,popedValue] = popStack(a)
+if(size(a,2)==0)
+    msgbox("Empty stack");
+    return
+end
+popedValue = a{1};
+newStack = a(2:end);
 function updateData(pts)
     global data
 
@@ -154,12 +163,109 @@ function updateData(pts)
         data(pointer,i+2) =pts(2,i);
     end
     
+     for i=1:size(data,1)
+         for j=i:size(data,1)
+             if(data(i,1)>data(j,1))
+                 tmp = data(i,:);
+                 data(i,:)=data(j,:);
+                 data(j,:)=tmp;
+             end
+         end
+     end
+     
+
+      frame_list = data(:,1);
+      index_list = find(frame_list==frames_num);
+      if(~isempty(index_list))
+      
+      for i = index_list(1):index_list(end)
+          for j = i:index_list(end)
+              if(data(i,1)>data(j,1))
+                  tmp = data(i,:);
+                  data(i,:)=data(j,:);
+                  data(j,:)=tmp;
+              end
+          end
+      end
+      end
+    global uitable_handle;
+ if(isvalid(uitable_handle)==1)
+
+     set(uitable_handle,'data',data);   
+
+ end
+
+function updateData2(pts)
+    global data
+
+    [data,pointer] = getData();
+    leg_counter = PM_get()+1;
+%     updatePM(leg_counter);
+    frames_num = getFramesNum();
+        len = size(data,2);
+        insert_x = zeros(1,len);
+        insert_y = zeros(1,len);
+        insert_x(1,1) = frames_num;
+        insert_x(1,2) = leg_counter;
+        insert_y(1,1) = frames_num;
+        insert_y(1,2) = leg_counter;
+        for i=1:size(pts,2)
+            insert_x(1,i+2) = pts(1,i);
+            insert_y(1,i+2) = pts(2,i);
+        end
+    if(isempty(data))
+        data(1,:)=insert_x;
+        data(2,:)=insert_y;
+    else
+
+
+        global s;
+        s =[];
+        bool =0;
+        isIn =0;
+        for i =1:size(data,1)
+            if(data(i,1)==frames_num)
+                isIn=1;
+                break;
+            end
+        end
+        for i=size(data,1):-1:1
+          if(isIn==1)  
+            if(data(i,1)==frames_num && data(i,2)<leg_counter && bool==0)
+                s = pushStack(s,{insert_y});
+                s = pushStack(s,{insert_x});
+                bool=1;
+            end
+                s = pushStack(s,{data(i,:)});
+          else
+            if(data(i,1)>frames_num && data(i-1,1)<frames_num && bool==0)
+                s = pushStack(s,{insert_y});
+                s = pushStack(s,{insert_x});
+                bool=1;
+            end
+                s = pushStack(s,{data(i,:)});              
+          end
+        end
+        count=1;
+        tmp=[];
+        while(size(s,2)~=0)
+            
+            [s,output] = popStack(s);
+            for i=1:size(output,2)
+                tmp(count,i) =output(i);
+            end
+            count=count+1
+        end
+        data = tmp;
+    end
+    
     global uitable_handle;
  if(isvalid(uitable_handle)==1)
      
      set(uitable_handle,'data',data);   
 
  end
+ 
 
 function press(hObject, eventdata, handles)
 global h_blue;
@@ -243,9 +349,9 @@ if((strcmp(key_press,'g')||strcmp(key_press,'G')))
     hold on;
 max = PM_getMax();
 ct = PM_get();
-if(ct<max)
-    return;
-end
+% if(ct<max)
+%     return;
+% end
     pts=[]
     
     changeData(pts);
@@ -498,16 +604,51 @@ data=[];
 
 function export_but_Callback(hObject, eventdata, handles)
 global data;
-data = [];
+
 global uitable_handle;
 [bool,uitable_handle] = SetUitable(data)
 data = get(uitable_handle,'Data');
- name = datestr(now);
- FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
- xlswrite(FileName,data);
+%  name = datestr(now);
+%  FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
+%  xlswrite(FileName,data);
+save2txt(data);
 
 
+function save2txt(data)
+for i=1:size(data,1)
+    fra = data(i,1);
+    leg = -1;
+    
+    if(fra~=data(i,1))
+        fra = data(i,1);
+    else
+        if(leg~= data(i,2) && i~=size(data,1))
+            leg = data(i,2);
+            data2save(1,:) = data(i,:);
+            data2save(2,:) = data(i+1,:);
+            mkdir(num2str(fra));
+            cd(num2str(fra));
+            fname = sprintf('%i.txt',leg);
+            save(fname);
+            fid=fopen(fname,'w');
+    for ii=1:size(data2save,1)
+        for j=1:size(data2save,2)
+            if j==size(data2save,2)
+                fprintf(fid,'%d\n',data2save(ii,j));%如果是最后一个，就换行
+            else
+                fprintf(fid,'%d  ',data2save(ii,j));%如果不是最后一个，就tab
+            end
+        end
 
+    end
+        fclose(fid);
+
+            cd ..
+        end
+    end
+end
+        
+    
 function frame_numbox_Callback(hObject, eventdata, handles)
 
 function frame_numbox_CreateFcn(hObject, eventdata, handles)
@@ -732,9 +873,9 @@ figure(1);
     hold on;
 max = PM_getMax();
 ct = PM_get();
-if(ct<max)
-    return;
-end
+% if(ct<max)
+%     return;
+% end
     pts=[]
     changeData(pts);
     updatePM(ct-1);
