@@ -608,11 +608,13 @@ global data;
 global uitable_handle;
 [bool,uitable_handle] = SetUitable(data)
 data = get(uitable_handle,'Data');
-%  name = datestr(now);
+  name = datestr(now);
 %  FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
 %  xlswrite(FileName,data);
+mkdir(name);
+cd(name);
 save2txt(data);
-
+cd ..;
 
 function save2txt(data)
 for i=1:size(data,1)
