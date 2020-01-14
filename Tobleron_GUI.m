@@ -608,9 +608,10 @@ global data;
 global uitable_handle;
 [bool,uitable_handle] = SetUitable(data)
 data = get(uitable_handle,'Data');
-  name = datestr(now);
+%name = datestr(now);
 %  FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
 %  xlswrite(FileName,data);
+name = uigetdir();
 mkdir(name);
 cd(name);
 save2txt(data);
