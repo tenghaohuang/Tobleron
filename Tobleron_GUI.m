@@ -612,8 +612,8 @@ data = get(uitable_handle,'Data');
 %  FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
 %  xlswrite(FileName,data);
 name = uigetdir();
-mkdir(name);
-cd(name);
+
+cd(name)
 save2txt(data);
 cd ..;
 
