@@ -611,43 +611,94 @@ data = get(uitable_handle,'Data');
 %name = datestr(now);
 %  FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
 %  xlswrite(FileName,data);
-name = uigetdir();
+% name = uigetdir();
+% cd(name)
 
-cd(name)
+mkdir WRTframe;
+cd WRTframe;
 save2txt(data);
 cd ..;
+
+mkdir WRTleg;
+cd WRTleg
+gatherLeg(data);
+cd ..;
+% cd ..;
+function gatherLeg(data)
+
+    
+    leg_list = data(:,2);
+    leg_list = unique(leg_list);
+    for leg = leg_list
+        for i=1:size(data,1)
+            if(i==size(data,1))
+                break;
+            end
+            fra = data(i,1);
+            if(fra==data(i,1)&&fra==data(i+1,1)&&leg == data(i,2)&&leg==data(i+1,2))
+                    data2save(1,:) = data(i,:);
+                    data2save(2,:) = data(i+1,:);
+                    
+                    mkdir(num2str(leg));
+                    cd(num2str(leg));
+                    
+                    fname = sprintf('%i.txt',fra);
+                    save(fname);
+                    fid=fopen(fname,'w');
+                    for ii=1:size(data2save,1)
+                        for j=1:size(data2save,2)
+                            if j==size(data2save,2)
+                                fprintf(fid,'%d\n',data2save(ii,j));%如果是最后一个，就换行
+                            else
+                                fprintf(fid,'%d  ',data2save(ii,j));%如果不是最后一个，就tab
+                            end
+                        end
+
+                    end
+                    fclose(fid);
+
+                    cd ..
+            end
+        end
+    end
+
 
 function save2txt(data)
 for i=1:size(data,1)
     fra = data(i,1);
-    leg = -1;
+    leg= data(i,2);
     
-    if(fra~=data(i,1))
-        fra = data(i,1);
-    else
-        if(leg~= data(i,2) && i~=size(data,1))
-            leg = data(i,2);
+    if(i==size(data,1))
+        break;
+    end
+    if(fra==data(i,1)&&fra==data(i+1,1)&&leg == data(i,2)&&leg==data(i+1,2))
+        
+    
+        
+            
             data2save(1,:) = data(i,:);
             data2save(2,:) = data(i+1,:);
+            display(data2save);
             mkdir(num2str(fra));
             cd(num2str(fra));
             fname = sprintf('%i.txt',leg);
             save(fname);
             fid=fopen(fname,'w');
-    for ii=1:size(data2save,1)
-        for j=1:size(data2save,2)
-            if j==size(data2save,2)
-                fprintf(fid,'%d\n',data2save(ii,j));%如果是最后一个，就换行
-            else
-                fprintf(fid,'%d  ',data2save(ii,j));%如果不是最后一个，就tab
-            end
-        end
+            for ii=1:size(data2save,1)
+                for j=1:size(data2save,2)
+                    if j==size(data2save,2)
+                        fprintf(fid,'%d\n',data2save(ii,j));%如果是最后一个，就换行
+                    else
+                        fprintf(fid,'%d  ',data2save(ii,j));%如果不是最后一个，就tab
+                    end
+                end
 
-    end
+            end
         fclose(fid);
 
             cd ..
-        end
+       
+        
     end
 end
         
