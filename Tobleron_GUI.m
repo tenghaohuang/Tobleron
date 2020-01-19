@@ -611,8 +611,8 @@ data = get(uitable_handle,'Data');
 %name = datestr(now);
 %  FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
 %  xlswrite(FileName,data);
-% name = uigetdir();
-% cd(name)
+ name = uigetdir();
+ cd(name)
 
 mkdir WRTframe;
 cd WRTframe;
@@ -623,7 +623,7 @@ mkdir WRTleg;
 cd WRTleg
 gatherLeg(data);
 cd ..;
-% cd ..;
+ cd ..;
 function gatherLeg(data)
 
     
