@@ -626,19 +626,24 @@ cd ..;
  cd ..;
 function gatherLeg(data)
 
-    
+    if(isempty(data))
+        return;
+    end
+    global leg_list;
     leg_list = data(:,2);
     leg_list = unique(leg_list);
-    for leg = leg_list
+    
+    for iii = 1:size(leg_list,1)
+        leg = leg_list(iii);
         for i=1:size(data,1)
             if(i==size(data,1))
                 break;
             end
             fra = data(i,1);
-            if(fra==data(i,1)&&fra==data(i+1,1)&&leg == data(i,2)&&leg==data(i+1,2))
+            if(isEqual(fra,data(i,1))& isEqual(fra,data(i+1,1))& isEqual(leg,data(i,2))& isEqual(leg,data(i+1,2)))
                     data2save(1,:) = data(i,:);
                     data2save(2,:) = data(i+1,:);
-                    
+                    display(data2save);
                     mkdir(num2str(leg));
                     cd(num2str(leg));
                     
@@ -659,8 +664,13 @@ function gatherLeg(data)
 
                     cd ..
             end
+            
         end
+
     end
+function bool = isEqual(a,b)
+bool = (abs(a-b)<0.001);
+display(bool)
 
 
 function save2txt(data)
@@ -678,7 +688,7 @@ for i=1:size(data,1)
             
             data2save(1,:) = data(i,:);
             data2save(2,:) = data(i+1,:);
-            display(data2save);
+            
             mkdir(num2str(fra));
             cd(num2str(fra));
             fname = sprintf('%i.txt',leg);
