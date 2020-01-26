@@ -632,7 +632,7 @@ function gatherLeg(data)
     global leg_list;
     leg_list = data(:,2);
     leg_list = unique(leg_list);
-    
+    counter =1
     for iii = 1:size(leg_list,1)
         leg = leg_list(iii);
         for i=1:size(data,1)
@@ -641,32 +641,33 @@ function gatherLeg(data)
             end
             fra = data(i,1);
             if(isEqual(fra,data(i,1))& isEqual(fra,data(i+1,1))& isEqual(leg,data(i,2))& isEqual(leg,data(i+1,2)))
-                    data2save(1,:) = data(i,:);
-                    data2save(2,:) = data(i+1,:);
+                    data2save(2*counter-1,:) = data(i,:);
+                    data2save(2*counter,:) = data(i+1,:);
                     display(data2save);
-                    mkdir(num2str(leg));
-                    cd(num2str(leg));
-                    
-                    fname = sprintf('%i.txt',fra);
-                    save(fname);
-                    fid=fopen(fname,'w');
-                    for ii=1:size(data2save,1)
-                        for j=1:size(data2save,2)
-                            if j==size(data2save,2)
-                                fprintf(fid,'%d\n',data2save(ii,j));%如果是最后一个，就换行
-                            else
-                                fprintf(fid,'%d  ',data2save(ii,j));%如果不是最后一个，就tab
-                            end
-                        end
-
-                    end
-                    fclose(fid);
-
-                    cd ..
+                    counter = counter+1;
+%                     mkdir(num2str(leg));
+%                     cd(num2str(leg));
+%                     cd ..
             end
             
         end
+        fname = sprintf('%i.txt',leg);
+        save(fname);
+        fid=fopen(fname,'w');
+        data2save(:,2)=[];
+        for ii=1:size(data2save,1)
+            for j=1:size(data2save,2)
+                if j==size(data2save,2)
+                    fprintf(fid,'%x\r\n',data2save(ii,j));%如果是最后一个，就换行
+                else
+                    fprintf(fid,'%x  ',data2save(ii,j));%如果不是最后一个，就tab
+                end
+            end
 
+         end
+         fclose(fid);
+         data2save = [];
+         counter=1;
     end
 function bool = isEqual(a,b)
 bool = (abs(a-b)<0.001);
