@@ -22,7 +22,7 @@ function varargout = Tobleron_GUI(varargin)
 
 % Edit the above text to modify the response to help Tobleron_GUI
 
-% Last Modified by GUIDE v2.5 21-Nov-2019 16:43:11
+% Last Modified by GUIDE v2.5 05-Feb-2020 01:13:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -143,6 +143,7 @@ if(size(a,2)==0)
 end
 popedValue = a{1};
 newStack = a(2:end);
+
 function updateData(pts)
     global data
 
@@ -576,9 +577,6 @@ y = y';
     updateData(pts);
     leg = PM_getMax();
     updatePM(leg+1);
-    
-
-    
 function initial_but_Callback(hObject, eventdata, handles)
 global frames_path;
 [baseName, folder] = uigetfile('*.MOV');
@@ -598,19 +596,15 @@ I=imread(fullfile(frames_path,filename));
 SeperateView(I);
 global data;
 data=[];
-
-
-
-
 function export_but_Callback(hObject, eventdata, handles)
 global data;
 
 global uitable_handle;
 [bool,uitable_handle] = SetUitable(data)
 data = get(uitable_handle,'Data');
-%name = datestr(now);
-%  FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
-%  xlswrite(FileName,data);
+name = datestr(now);
+ FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
+ xlswrite(FileName,data);
  name = uigetdir();
  cd(name)
 
@@ -1006,3 +1000,15 @@ data = [];
 global uitable_handle;
 [bool,uitable_handle,fig] = SetUitable(data)
 delete(fig);
+
+
+% --- Executes on button press in pushbutton18.
+function pushbutton18_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton18 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global data
+[baseName, folder] = uigetfile('*.csv');
+filePath = fullfile(folder, baseName)
+data = csvread(filePath)
+drawData(data)
