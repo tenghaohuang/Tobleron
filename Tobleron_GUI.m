@@ -22,7 +22,7 @@ function varargout = Tobleron_GUI(varargin)
 
 % Edit the above text to modify the response to help Tobleron_GUI
 
-% Last Modified by GUIDE v2.5 05-Feb-2020 01:13:15
+% Last Modified by GUIDE v2.5 14-Feb-2020 12:25:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -406,10 +406,13 @@ if((strcmp(key_press,'z')||strcmp(key_press,'Z')))
     SeperateView(I);
     updatePM(0);
 end
+
 function drawData(startover)
     global leg;
     global frames_path;
     global begin;
+    global data
+
     [data,pointer] = getData();
     leg = PM_getMax();
 
@@ -419,10 +422,12 @@ function drawData(startover)
     handle_fig = figure(1);
     close(handle_fig);
     SeperateView(I);
+    disp('111111')
     if(leg==0)
         
         return;
     end
+    
     if(isempty(data))
         return;
     end
@@ -850,6 +855,7 @@ global items
     else
         maxi =0;
     end
+    
 function OEF_Callback(hObject, eventdata, handles)
 global frames_path;
 global data;
@@ -932,9 +938,10 @@ figure(1);
     hold on;
 max = PM_getMax();
 ct = PM_get();
-% if(ct<max)
-%     return;
-% end
+ if(ct<max)
+     msgbox('Dont do this, young Jedi. Only the final curve can be deleted.')
+    return;
+ end
     pts=[]
     changeData(pts);
     updatePM(ct-1);
@@ -1008,7 +1015,25 @@ function pushbutton18_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global data
+global frames_path
 [baseName, folder] = uigetfile('*.csv');
+
 filePath = fullfile(folder, baseName)
 data = csvread(filePath)
-drawData(data)
+folderPath = uigetdir();
+frames_path= folderPath;
+frames_num =1;
+set(handles.frame_numbox,'String',num2str(frames_num));
+count =0;
+for i = 1:size(data,1)
+    if data(i,1)==1
+        count = count+1;
+    end
+end
+updatePM(count/2)
+drawData()
+
+% global frames_path;
+% global data;
+% data =[];
+% updatePM(0);
