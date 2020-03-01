@@ -22,7 +22,7 @@ function varargout = Tobleron_GUI(varargin)
 
 % Edit the above text to modify the response to help Tobleron_GUI
 
-% Last Modified by GUIDE v2.5 14-Feb-2020 12:25:05
+% Last Modified by GUIDE v2.5 28-Feb-2020 11:56:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -714,6 +714,7 @@ end
         
     
 function frame_numbox_Callback(hObject, eventdata, handles)
+drawData();
 
 function frame_numbox_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to frame_numbox (see GCBO)
@@ -934,6 +935,9 @@ global h_blue;
 global h_red;
 global uitable_handle;
 global frames_path;
+global data;
+h =findall(0,'tag','Start_Over');
+% set(h,'Enable','off')
 figure(1);
     hold on;
 max = PM_getMax();
@@ -946,6 +950,7 @@ ct = PM_get();
     changeData(pts);
     updatePM(ct-1);
     drawData('startover');
+%  set(h,'Enable','on')
     
 function Data_Window_Callback(hObject, eventdata, handles)
 global uitable_handle;
@@ -1037,3 +1042,11 @@ drawData()
 % global data;
 % data =[];
 % updatePM(0);
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over frame_numbox.
+function frame_numbox_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to frame_numbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
