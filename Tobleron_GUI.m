@@ -22,7 +22,7 @@ function varargout = Tobleron_GUI(varargin)
 
 % Edit the above text to modify the response to help Tobleron_GUI
 
-% Last Modified by GUIDE v2.5 28-Feb-2020 11:56:08
+% Last Modified by GUIDE v2.5 01-Mar-2020 20:56:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -438,7 +438,7 @@ function drawData(startover)
             break;
         end
     end
-    display(begin);
+    
     global points;
     global watch;
     current_leg = PM_get();
@@ -714,7 +714,33 @@ end
         
     
 function frame_numbox_Callback(hObject, eventdata, handles)
-drawData();
+    
+    [data,pointer] = getData();
+    frames_num = getFramesNum();
+    global frames_path;
+    if(frames_num==1)
+        msgbox("No previous frame");
+        return
+    end
+       
+    handle_fig = figure(1);
+    close(handle_fig);
+    leg_counter=1;
+    h = findall(0,'tag','frame_numbox');
+    set(h,'String',num2str(frames_num));
+    
+    updatePM(leg_counter);
+    filename = strcat('frame',num2str(frames_num),'.jpg');
+    I=imread(fullfile(frames_path,filename));
+    updatePM(0);
+
+    [legnum,begin] = getNums(frames_num);
+    if(begin ==-1)
+        return;
+    end
+    updatePM(legnum);
+    drawData();
+    
 
 function frame_numbox_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to frame_numbox (see GCBO)
@@ -933,25 +959,52 @@ figure(1);
 function Start_Over_Callback(hObject, eventdata, handles)
 global h_blue;
 global h_red;
-global uitable_handle;
+
 global frames_path;
 global data;
+
 h =findall(0,'tag','Start_Over');
 % set(h,'Enable','off')
+fNum = getFramesNum()
+
 figure(1);
     hold on;
 max = PM_getMax();
 ct = PM_get();
+if(ct ==0)
+    return;
+end
  if(ct<max)
      msgbox('Dont do this, young Jedi. Only the final curve can be deleted.')
     return;
  end
-    pts=[]
-    changeData(pts);
+%     pts=[]
+%     changeData(pts);
+data = deleteCurve(fNum,ct)
     updatePM(ct-1);
     drawData('startover');
+    data_ui =findall(0,'figure','DataTable');
+    close(figure(2))
+    SetUitable(data);
 %  set(h,'Enable','on')
-    
+
+function ret = deleteCurve(fNum,ct)
+[data,p] = getData();
+begin =0;
+for i=1:size(data,1)
+    if(data(i,1)==fNum & data(i,2)==ct)
+        begin = i;
+        break;
+    end
+end
+data(begin,:)=[]
+data(begin,:)=[]
+ret = data;
+
+
+
+
+
 function Data_Window_Callback(hObject, eventdata, handles)
 global uitable_handle;
 [data,pointer] = getData();
@@ -1008,6 +1061,7 @@ set(h, 'String',a);
 % --- Executes during object creation, after setting all properties.
 function Data_Window_CreateFcn(hObject, eventdata, handles)
 global data;
+
 data = [];
 global uitable_handle;
 [bool,uitable_handle,fig] = SetUitable(data)
@@ -1042,11 +1096,3 @@ drawData()
 % global data;
 % data =[];
 % updatePM(0);
-
-
-% --- If Enable == 'on', executes on mouse press in 5 pixel border.
-% --- Otherwise, executes on mouse press in 5 pixel border or over frame_numbox.
-function frame_numbox_ButtonDownFcn(hObject, eventdata, handles)
-% hObject    handle to frame_numbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
