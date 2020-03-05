@@ -385,13 +385,14 @@ if((strcmp(key_press,'x')||strcmp(key_press,'X')))
     updatePM(0);
 end
 if((strcmp(key_press,'z')||strcmp(key_press,'Z')))
+      [data,pointer] = getData();
     frames_num = getFramesNum();
-    
+    global frames_path;
     if(frames_num==1)
         msgbox("No previous frame");
         return
     end
-        
+       
     handle_fig = figure(1);
     close(handle_fig);
     frames_num = frames_num -1;
@@ -405,6 +406,14 @@ if((strcmp(key_press,'z')||strcmp(key_press,'Z')))
     
     SeperateView(I);
     updatePM(0);
+
+    [legnum,begin] = getNums(frames_num);
+    if(begin ==-1)
+        return;
+    end
+    updatePM(legnum);
+    drawData();
+    figure(1)
 end
 
 function drawData(startover)
