@@ -22,7 +22,7 @@ function varargout = Tobleron_GUI(varargin)
 
 % Edit the above text to modify the response to help Tobleron_GUI
 
-% Last Modified by GUIDE v2.5 01-Mar-2020 20:56:55
+% Last Modified by GUIDE v2.5 15-Mar-2020 13:55:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -493,13 +493,16 @@ function pts = PM_getPts()
 
 
 function SeperateView(I)
+global api;
+h = findall(0,'tag','MagBox');
+mag_num = str2num(get(h,'string'));
 hFig = figure('Toolbar','none',...
 'Menubar','none');
 hIm = imshow(I);
 %hFig= figure(1);
 hSP = imscrollpanel(hFig,hIm);
 api = iptgetapi(hSP);
-api.setMagnification(2) % 2X = 200%
+api.setMagnification(mag_num) % 2X = 200%
 
 hMagBox = immagbox(hFig, hIm);
 boxPosition = get(hMagBox, 'Position');
@@ -994,7 +997,7 @@ data = deleteCurve(fNum,ct)
     drawData('startover');
     data_ui =findall(0,'figure','DataTable');
     close(figure(2))
-    SetUitable(data);
+    
 %  set(h,'Enable','on')
 
 function ret = deleteCurve(fNum,ct)
@@ -1105,3 +1108,33 @@ drawData()
 % global data;
 % data =[];
 % updatePM(0);
+
+
+
+function MagBox_Callback(hObject, eventdata, handles)
+% hObject    handle to MagBox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of MagBox as text
+%        str2double(get(hObject,'String')) returns contents of MagBox as a double
+global api;
+h = findall(0,'tag','MagBox');
+mag_num = str2num(get(h,'string'));
+api.setMagnification(mag_num);
+
+
+% --- Executes during object creation, after setting all properties.
+function MagBox_CreateFcn(hObject, eventdata, handles)
+
+% hObject    handle to MagBox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+h = findall(0,'tag','MagBox');
+set(h,'string',num2str(2))
