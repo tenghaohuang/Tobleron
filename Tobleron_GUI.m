@@ -368,8 +368,9 @@ if((strcmp(key_press,'q')||strcmp(key_press,'Q')))
     end
 end
 if((strcmp(key_press,'x')||strcmp(key_press,'X')))
+    [data,pointer] = getData();
     frames_num = getFramesNum();
-    
+    global frames_path;
     handle_fig = figure(1);
     close(handle_fig);
     frames_num = frames_num +1;
@@ -383,6 +384,12 @@ if((strcmp(key_press,'x')||strcmp(key_press,'X')))
     
     SeperateView(I);
     updatePM(0);
+    [legnum,begin] = getNums(frames_num);
+    if(begin ==-1)
+        return;
+    end
+    updatePM(legnum);
+    drawData();
 end
 if((strcmp(key_press,'z')||strcmp(key_press,'Z')))
       [data,pointer] = getData();
@@ -621,10 +628,10 @@ global uitable_handle;
 data = get(uitable_handle,'Data');
 name = datestr(now);
  FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
- xlswrite(FileName,data);
+ 
  name = uigetdir();
  cd(name)
-
+xlswrite(FileName,data);
 mkdir WRTframe;
 cd WRTframe;
 save2txt(data);
