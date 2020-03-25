@@ -22,7 +22,7 @@ function varargout = Tobleron_GUI(varargin)
 
 % Edit the above text to modify the response to help Tobleron_GUI
 
-% Last Modified by GUIDE v2.5 25-Mar-2020 02:29:45
+% Last Modified by GUIDE v2.5 25-Mar-2020 02:22:06
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -518,7 +518,7 @@ boxPosition = get(hMagBox, 'Position');
 set(hMagBox,'Position', [0, 0, boxPosition(3), boxPosition(4)])
 global ret
 
-f1 =  findall(0,'tag','figure1');
+f1 = figure;
 overview = imoverviewpanel(f1,hIm)
 set(overview,'Units','Normalized',...
 'Position',[0.5 0 0.25 .25])
@@ -810,8 +810,6 @@ function previous_but_Callback(hObject, eventdata, handles)
     
 function [num,begin]=getNums(framenum)
     [data,pointer] = getData();
-    count=0;
-    begin =0;
     if(isempty(data))
         return;
     end
@@ -826,7 +824,7 @@ function [num,begin]=getNums(framenum)
         num =0;
         return;
     end
-    
+    count=0;
     for i =begin:size(data,1)
         if(data(i,1)==framenum)
             count = count+1;
@@ -852,16 +850,11 @@ function next_but_Callback(hObject, eventdata, handles)
     
     SeperateView(I);
     updatePM(0);
-    try
-        [legnum,begin] = getNums(frames_num);
-        if(begin ==-1)
-            return;
-        end
-        updatePM(legnum);
-    catch
-        
+    [legnum,begin] = getNums(frames_num);
+    if(begin ==-1)
+        return;
     end
-    
+    updatePM(legnum);
     drawData();
   
 function [num] = PM_get()
@@ -1161,9 +1154,9 @@ h = findall(0,'tag','MagBox');
 set(h,'string',num2str(2))
 
 
-% --- Executes on key press with focus on figure1 and none of its controls.
-function figure1_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to figure1 (see GCBO)
+% --- Executes on key press with focus on main and none of its controls.
+function main_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to main (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
 %	Key: name of the key that was pressed, in lower case
 %	Character: character interpretation of the key(s) that was pressed
