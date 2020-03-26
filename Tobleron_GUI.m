@@ -521,7 +521,7 @@ global ret
 f1 =  findall(0,'tag','figure1');
 overview = imoverviewpanel(f1,hIm)
 set(overview,'Units','Normalized',...
-'Position',[0.5 0 0.25 .25])
+'Position',[0.125 0.05 0.75 .25]) %This controls the size and the position of the magnification window.
 % Get the scroll panel API to programmatically control the view.
 api = iptgetapi(hSP);
 % Get the current magnification and position.
@@ -682,9 +682,9 @@ function gatherLeg(data)
         for ii=1:size(data2save,1)
             for j=1:size(data2save,2)
                 if j==size(data2save,2)
-                    fprintf(fid,'%x\r\n',data2save(ii,j));%Èç¹ûÊÇ×îºóÒ»¸ö£¬¾Í»»ÐÐ
+                    fprintf(fid,'%x\r\n',data2save(ii,j));%ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Í»ï¿½ï¿½ï¿½
                 else
-                    fprintf(fid,'%x  ',data2save(ii,j));%Èç¹û²»ÊÇ×îºóÒ»¸ö£¬¾Ítab
+                    fprintf(fid,'%x  ',data2save(ii,j));%ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tab
                 end
             end
 
@@ -722,9 +722,9 @@ for i=1:size(data,1)
             for ii=1:size(data2save,1)
                 for j=1:size(data2save,2)
                     if j==size(data2save,2)
-                        fprintf(fid,'%d\n',data2save(ii,j));%Èç¹ûÊÇ×îºóÒ»¸ö£¬¾Í»»ÐÐ
+                        fprintf(fid,'%d\n',data2save(ii,j));%ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Í»ï¿½ï¿½ï¿½
                     else
-                        fprintf(fid,'%d  ',data2save(ii,j));%Èç¹û²»ÊÇ×îºóÒ»¸ö£¬¾Ítab
+                        fprintf(fid,'%d  ',data2save(ii,j));%ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tab
                     end
                 end
 
