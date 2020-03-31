@@ -85,6 +85,7 @@ else
     assert(0);
 end
 
+
 function changeData(pts)
 frames_num = getFramesNum();
 leg = PM_get();
@@ -368,6 +369,9 @@ if((strcmp(key_press,'q')||strcmp(key_press,'Q')))
     end
 end
 if((strcmp(key_press,'x')||strcmp(key_press,'X')))
+    global api;
+    global r;
+    r = api.getVisibleLocation();
     [data,pointer] = getData();
     frames_num = getFramesNum();
     global frames_path;
@@ -392,6 +396,9 @@ if((strcmp(key_press,'x')||strcmp(key_press,'X')))
     drawData();
 end
 if((strcmp(key_press,'z')||strcmp(key_press,'Z')))
+        global api;
+    global r;
+    r = api.getVisibleLocation();
       [data,pointer] = getData();
     frames_num = getFramesNum();
     global frames_path;
@@ -399,7 +406,7 @@ if((strcmp(key_press,'z')||strcmp(key_press,'Z')))
         msgbox("No previous frame");
         return
     end
-       
+ 
     handle_fig = figure(1);
     close(handle_fig);
     frames_num = frames_num -1;
@@ -501,10 +508,12 @@ function pts = PM_getPts()
 
 function SeperateView(I)
 global api;
+global r;
 h = findall(0,'tag','MagBox');
 mag_num = str2num(get(h,'string'));
 hFig = figure('Toolbar','none',...
 'Menubar','none');
+% set(hFig,'Position',[2,2,2,2])
 global hIm;
 hIm = imshow(I);
 %hFig= figure(1);
@@ -513,11 +522,15 @@ hSP = imscrollpanel(hFig,hIm);
 api = iptgetapi(hSP);
 api.setMagnification(mag_num) % 2X = 200%
 
-hMagBox = immagbox(hFig, hIm);
-boxPosition = get(hMagBox, 'Position');
-set(hMagBox,'Position', [0, 0, boxPosition(3), boxPosition(4)])
-global ret
 
+
+hMagBox = immagbox(hFig, hIm);
+
+ boxPosition = get(hMagBox, 'Position');
+ set(hMagBox,'Position', [0, 0, boxPosition(3), boxPosition(4)])
+
+global ret
+global overview;
 f1 =  findall(0,'tag','figure1');
 overview = imoverviewpanel(f1,hIm)
 set(overview,'Units','Normalized',...
@@ -525,8 +538,12 @@ set(overview,'Units','Normalized',...
 % Get the scroll panel API to programmatically control the view.
 api = iptgetapi(hSP);
 % Get the current magnification and position.
+if(r ==0)
+    r = api.getVisibleLocation();
+end
+api.setVisibleLocation(r);
 mag = api.getMagnification();
-r = api.getVisibleImageRect();
+
 set(hIm,'ButtonDownFcn',@curve);
 set(hFig,'KeyPressFcn',@press);
 
@@ -609,6 +626,8 @@ y = y';
     updatePM(leg+1);
 function initial_but_Callback(hObject, eventdata, handles)
 global frames_path;
+global r;
+r = 0;
 [baseName, folder] = uigetfile('*.MOV');
 filePath = fullfile(folder, baseName)
  
@@ -779,6 +798,9 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 function previous_but_Callback(hObject, eventdata, handles)
+    global api;
+    global r;
+    r = api.getVisibleLocation();
     [data,pointer] = getData();
     frames_num = getFramesNum();
     global frames_path;
@@ -810,9 +832,12 @@ function previous_but_Callback(hObject, eventdata, handles)
     
 function [num,begin]=getNums(framenum)
     [data,pointer] = getData();
+%     snake =eeee
     count=0;
     begin =0;
     if(isempty(data))
+        num =0;
+        begin =0;
         return;
     end
     begin =-1;
@@ -833,9 +858,13 @@ function [num,begin]=getNums(framenum)
         end
     end
     num = count/2;
-    
+  
 function next_but_Callback(hObject, eventdata, handles)
-
+    global api;
+    global r;
+    r = api.getVisibleLocation();
+    
+%     boxPosition = get(hMagBox, 'Position');
     [data,pointer] = getData();
     frames_num = getFramesNum();
     global frames_path;
@@ -1110,8 +1139,8 @@ global data
 global frames_path
 [baseName, folder] = uigetfile('*.csv');
 
-filePath = fullfile(folder, baseName)
-data = csvread(filePath)
+filePath = fullfile(folder, baseName);
+data = csvread(filePath);
 folderPath = uigetdir();
 frames_path= folderPath;
 frames_num =1;
