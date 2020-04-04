@@ -538,7 +538,7 @@ set(overview,'Units','Normalized',...
 % Get the scroll panel API to programmatically control the view.
 api = iptgetapi(hSP);
 % Get the current magnification and position.
-if(r ==0)
+if(isempty(r))
     r = api.getVisibleLocation();
 end
 api.setVisibleLocation(r);
@@ -743,7 +743,7 @@ for i=1:size(data,1)
                     if j==size(data2save,2)
                         fprintf(fid,'%d\n',data2save(ii,j));%��������һ�����ͻ���
                     else
-                        fprintf(fid,'%d  ',data2save(ii,j));%����������һ������tab
+                        fprintf(fid,'%d ',data2save(ii,j));
                     end
                 end
 
