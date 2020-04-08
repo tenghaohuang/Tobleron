@@ -529,6 +529,14 @@ hMagBox = immagbox(hFig, hIm);
  boxPosition = get(hMagBox, 'Position');
  set(hMagBox,'Position', [0, 0, boxPosition(3), boxPosition(4)])
 
+set(0,'units','pixels'); %Sets the units of your root object (screen) to pixels
+Pix_SS = get(0,'screensize'); %Obtains this pixel information
+width=Pix_SS(3)-302;
+height=Pix_SS(4);
+x0=0;
+y0=0;
+set(hFig,'position',[x0,y0,width,height])
+
 global ret
 global overview;
 f1 =  findall(0,'tag','figure1');
@@ -701,9 +709,9 @@ function gatherLeg(data)
         for ii=1:size(data2save,1)
             for j=1:size(data2save,2)
                 if j==size(data2save,2)
-                    fprintf(fid,'%x\r\n',data2save(ii,j));%��������һ�����ͻ���
+                    fprintf(fid,'%d\r\n',data2save(ii,j));%��������һ�����ͻ���
                 else
-                    fprintf(fid,'%x  ',data2save(ii,j));%����������һ������tab
+                    fprintf(fid,'%d  ',data2save(ii,j));%����������һ������tab
                 end
             end
 
@@ -741,7 +749,7 @@ for i=1:size(data,1)
             for ii=1:size(data2save,1)
                 for j=1:size(data2save,2)
                     if j==size(data2save,2)
-                        fprintf(fid,'%d\n',data2save(ii,j));%��������һ�����ͻ���
+                        fprintf(fid,'%d\n',data2save(ii,j));
                     else
                         fprintf(fid,'%d ',data2save(ii,j));
                     end
