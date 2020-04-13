@@ -660,10 +660,11 @@ global uitable_handle;
 [bool,uitable_handle] = SetUitable(data)
 data = get(uitable_handle,'Data');
 name = datestr(now);
+waitfor(msgbox("Select a folder to save xlsx file",'modal'));
  FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
- 
+waitfor(msgbox("Select a folder to save frames and legs information",'modal'));
  name = uigetdir();
- cd(name)
+cd(name)
 xlswrite(FileName,data);
 mkdir WRTframe;
 cd WRTframe;
@@ -1145,10 +1146,12 @@ function pushbutton18_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global data
 global frames_path
+waitfor(msgbox("Select csv file path",'modal'));
 [baseName, folder] = uigetfile('*.csv');
 
 filePath = fullfile(folder, baseName);
 data = csvread(filePath);
+waitfor(msgbox("Select frames path",'modal'));
 folderPath = uigetdir();
 frames_path= folderPath;
 frames_num =1;
