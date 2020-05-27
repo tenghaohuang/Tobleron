@@ -11,24 +11,22 @@ function cPoly = reposition(cPoly)
         [a, b] = ginput(1);
         diffX = abs(cPoly(1, :) - a);
         diffY = abs(cPoly(2, :) - b);
-        [minX, iX] = min(diffX);
-        [minY, iY] = min(diffY);
-        
+
         dist = sqrt((cPoly(1, :) - a) .^ 2 + (cPoly(2, :) - b) .^ 2);
-        dist_sorted = sort(dist);
-        dist1 = dist_sorted(1);
-        dist2 = dist_sorted(2);
-        idx_1 = find(dist == dist1);
-        idx_2 = find(dist == dist2);
         
 
-      
-        if iX == iY && minX < 20 && minY < 20
-            i = iX;
-            pointSelected = true;
-            
-            break;
+        [minDist,pos] = min(dist);
         
+        display(pos);
+        if minDist<10
+            i = pos;
+            pointSelected = true;
+            break;
+%         else
+%             display(iX);
+%             display(iY);
+%             display(minX);
+%             display(minY);
         end
     end
     

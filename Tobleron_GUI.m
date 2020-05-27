@@ -22,7 +22,7 @@ function varargout = Tobleron_GUI(varargin)
 
 % Edit the above text to modify the response to help Tobleron_GUI
 
-% Last Modified by GUIDE v2.5 25-Mar-2020 02:29:45
+% Last Modified by GUIDE v2.5 03-May-2020 23:37:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -71,8 +71,6 @@ function [ret,pointer]=getData()
 global data;
 ret =data;
 pointer = size(data,1)+1;
-
-
 function num = getFramesNum()
 hh = findall(0,'tag','frame_numbox');
 global tmp;
@@ -84,8 +82,52 @@ elseif(isa(tmp,'char'))
 else
     assert(0);
 end
+function pts = PM_getPts()
+    frames_num = getFramesNum();
+    [data,pointer] = getData();
+    leg = PM_get();
+    if(isempty(data))
+        return;
+    end
+    begin =0;
+    for i =1:size(data,1)
+        if(data(i,1)==frames_num)
+            begin =i-1;
+            break;
+        end
+    end
+    x = data(begin+leg*2-1,3:size(data,2));
+    y = data(begin+leg*2,3:size(data,2))
+    pts = [x;y]
+function [num] = PM_get()
+    global items
+    global idx
+    handles = findall(0,'tag','PM');
+    idx = get(handles,'value');
+    items = get(handles,'string');
+    if(isa(items,'cell'))
+        leg_num = str2num(items{idx});
+    elseif(isa(items,'char'))
+        leg_num = str2num(items);
+    end
+    num = leg_num
+function [maxi]=PM_getMax()
+global items
+    hh = findall(0,'tag','PM');
+    items = get(hh,'string');
+    
 
+    
+    if(isa(items,'cell'))
+        for i =1:size(items,1)
+            tmp{i}=str2num(items{i});
+        end
+        maxi = max([tmp{:}]);
+    else
+        maxi =0;
+    end
 
+    
 function changeData(pts)
 frames_num = getFramesNum();
 leg = PM_get();
@@ -197,77 +239,12 @@ function updateData(pts)
 
  end
 
-function updateData2(pts)
-    global data
 
-    [data,pointer] = getData();
-    leg_counter = PM_get()+1;
-%     updatePM(leg_counter);
-    frames_num = getFramesNum();
-        len = size(data,2);
-        insert_x = zeros(1,len);
-        insert_y = zeros(1,len);
-        insert_x(1,1) = frames_num;
-        insert_x(1,2) = leg_counter;
-        insert_y(1,1) = frames_num;
-        insert_y(1,2) = leg_counter;
-        for i=1:size(pts,2)
-            insert_x(1,i+2) = pts(1,i);
-            insert_y(1,i+2) = pts(2,i);
-        end
-    if(isempty(data))
-        data(1,:)=insert_x;
-        data(2,:)=insert_y;
-    else
-
-
-        global s;
-        s =[];
-        bool =0;
-        isIn =0;
-        for i =1:size(data,1)
-            if(data(i,1)==frames_num)
-                isIn=1;
-                break;
-            end
-        end
-        for i=size(data,1):-1:1
-          if(isIn==1)  
-            if(data(i,1)==frames_num && data(i,2)<leg_counter && bool==0)
-                s = pushStack(s,{insert_y});
-                s = pushStack(s,{insert_x});
-                bool=1;
-            end
-                s = pushStack(s,{data(i,:)});
-          else
-            if(data(i,1)>frames_num && data(i-1,1)<frames_num && bool==0)
-                s = pushStack(s,{insert_y});
-                s = pushStack(s,{insert_x});
-                bool=1;
-            end
-                s = pushStack(s,{data(i,:)});              
-          end
-        end
-        count=1;
-        tmp=[];
-        while(size(s,2)~=0)
-            
-            [s,output] = popStack(s);
-            for i=1:size(output,2)
-                tmp(count,i) =output(i);
-            end
-            count=count+1
-        end
-        data = tmp;
-    end
-    
-    global uitable_handle;
- if(isvalid(uitable_handle)==1)
-     
-     set(uitable_handle,'data',data);   
-
- end
  
+% Press Function
+% -usage: Handles all the keyboard pressing events
+% -Parameter: a pressing event
+% -Output: Respond with specified events
 
 function press(hObject, eventdata, handles)
 global h_blue;
@@ -299,6 +276,9 @@ end
 if((strcmp(key_press,'f')||strcmp(key_press,'F')))
     
     pts = PM_getPts(); 
+    global watch;
+    
+    watch = pts;
     pts = cleanPts(pts);
     pts = deleteP(pts);
     pts = cleanPts(pts);
@@ -323,6 +303,7 @@ if((strcmp(key_press,'f')||strcmp(key_press,'F')))
     tmp_pts=draw(x,y);
     tmp_pts= cleanPts(tmp_pts);
     changeData(tmp_pts);
+    display('success');
 
 end
 if((strcmp(key_press,'s')||strcmp(key_press,'S')))
@@ -481,30 +462,9 @@ function drawData(startover)
             paint(points,'-c');
         end
     end
+
+
     
-
-
-
-function pts = PM_getPts()
-    frames_num = getFramesNum();
-    [data,pointer] = getData();
-    leg = PM_get();
-    if(isempty(data))
-        return;
-    end
-    begin =0;
-    for i =1:size(data,1)
-        if(data(i,1)==frames_num)
-            begin =i-1;
-            break;
-        end
-    end
-    x = data(begin+leg*2-1,3:size(data,2));
-    y = data(begin+leg*2,3:size(data,2))
-    pts = [x;y]
-
-
-
 
 function SeperateView(I)
 global api;
@@ -632,6 +592,14 @@ y = y';
     updateData(pts);
     leg = PM_getMax();
     updatePM(leg+1);
+
+% Select video button
+% -usage: Select a video and decompose it into frames
+% ------- Will directly open up drawing window based on the decomposed
+% --------frames
+% -Parameter: N/A
+% -Output: A drawing window contains a image listening to keypress function, mouse
+% -------- clicking function
 function initial_but_Callback(hObject, eventdata, handles)
 global frames_path;
 global r;
@@ -653,6 +621,17 @@ I=imread(fullfile(frames_path,filename));
 SeperateView(I);
 global data;
 data=[];
+% Export button
+% -usage: Ecport a Xlsx file, two folders: one named "WRTleg", which
+% ------- outputs N txt files (N is the number of legs), each 
+%-------- contaning the coordinates of tracked appendages from the 1st 
+%-------- frame to the last one; There is another folder named "WRTframe", 
+%-------- which outputs M txt file (M is the number of processed frames), 
+%-------- each containing the coordinates of tracked appendages within a
+%-------- frame.
+% -Parameter: 
+% -Output: One xlsx file, two folders containing txt files.
+% -------- 
 function export_but_Callback(hObject, eventdata, handles)
 global data;
 
@@ -765,7 +744,15 @@ for i=1:size(data,1)
     end
 end
         
-    
+% FrameNum box
+% -usage: 
+% ------- Take in an interger as input
+% ------------ Refresh the drawing window and display the corresponded imgae as
+% -------------the interger specified
+% -------------Redraw the appendages of that frame from [data]
+% -Parameter: an integer within the length of decomposed frames.
+% -Output: Refresh the drawing window by the specified frame of picture
+
 function frame_numbox_Callback(hObject, eventdata, handles)
     
     [data,pointer] = getData();
@@ -793,8 +780,6 @@ function frame_numbox_Callback(hObject, eventdata, handles)
     end
     updatePM(legnum);
     drawData();
-    
-
 function frame_numbox_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to frame_numbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -806,6 +791,10 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+% Previous Frame button
+% -usage: Display the previous image in the drawing window
+% -Parameter: N/A
+% -Output: Refresh the drawing window by the previous frame of picture
 function previous_but_Callback(hObject, eventdata, handles)
     global api;
     global r;
@@ -867,7 +856,13 @@ function [num,begin]=getNums(framenum)
         end
     end
     num = count/2;
-  
+    
+    
+% Next Frmae button
+% -usage: Display the next image in the drawing window
+% -Parameter: N/A
+% -Output: Refresh the drawing window by the next frame of picture
+
 function next_but_Callback(hObject, eventdata, handles)
     global api;
     global r;
@@ -901,19 +896,6 @@ function next_but_Callback(hObject, eventdata, handles)
     end
     
     drawData();
-  
-function [num] = PM_get()
-    global items
-    global idx
-    handles = findall(0,'tag','PM');
-    idx = get(handles,'value');
-    items = get(handles,'string');
-    if(isa(items,'cell'))
-        leg_num = str2num(items{idx});
-    elseif(isa(items,'char'))
-        leg_num = str2num(items);
-    end
-    num = leg_num
 
 function updatePM(leg_counter)
 
@@ -938,21 +920,7 @@ global max
         end
         set(hh, 'string', popupList);
 
-function [maxi]=PM_getMax()
-global items
-    hh = findall(0,'tag','PM');
-    items = get(hh,'string');
-    
 
-    
-    if(isa(items,'cell'))
-        for i =1:size(items,1)
-            tmp{i}=str2num(items{i});
-        end
-        maxi = max([tmp{:}]);
-    else
-        maxi =0;
-    end
     
 function OEF_Callback(hObject, eventdata, handles)
 global frames_path;
@@ -1056,8 +1024,7 @@ data = deleteCurve(fNum,ct)
     drawData('startover');
     data_ui =findall(0,'figure','DataTable');
     close(figure(2))
-    
-%  set(h,'Enable','on')
+ 
 
 function ret = deleteCurve(fNum,ct)
 [data,p] = getData();
@@ -1071,11 +1038,11 @@ end
 data(begin,:)=[]
 data(begin,:)=[]
 ret = data;
-
-
-
-
-
+%% Data window
+% - Usage: display [data] information in a Fig. The first column represents
+% --- 
+% - Parameter:
+% - Output
 function Data_Window_Callback(hObject, eventdata, handles)
 global uitable_handle;
 [data,pointer] = getData();
@@ -1107,6 +1074,8 @@ figure(1);
     tmp_pts= cleanPts(tmp_pts);
     changeData(tmp_pts);
 
+
+%pushdown manual set up
 function PM_Callback(hObject, eventdata, handles)
 figure(1);
 global h_blue;
@@ -1139,9 +1108,15 @@ global uitable_handle;
 delete(fig);
 
 
-% --- Executes on button press in pushbutton18.
-function pushbutton18_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton18 (see GCBO)
+% Load button
+% -usage: Display the next image in the drawing window
+% -Parameter: an csv. file contaning appendages' coordinates information
+% --- in standard format + a folder contaning decomposed frames
+% -Output: Resume the previous work by reloading the [data] information,
+% --- and source frame folder
+
+function Load_Callback(hObject, eventdata, handles)
+% hObject    handle to Load (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global data
@@ -1164,13 +1139,6 @@ for i = 1:size(data,1)
 end
 updatePM(count/2)
 drawData()
-
-% global frames_path;
-% global data;
-% data =[];
-% updatePM(0);
-
-
 
 function MagBox_Callback(hObject, eventdata, handles)
 % hObject    handle to MagBox (see GCBO)
@@ -1199,13 +1167,3 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 h = findall(0,'tag','MagBox');
 set(h,'string',num2str(2))
-
-
-% --- Executes on key press with focus on figure1 and none of its controls.
-function figure1_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to figure1 (see GCBO)
-% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
-% handles    structure with handles and user data (see GUIDATA)
