@@ -768,13 +768,15 @@ global data_exp;
 global uitable_handle;
 [bool,uitable_handle] = SetUitable(data)
 data = get(uitable_handle,'Data');
-
+    if(isempty(data))
+        return
+    end
     hh = findall(0,'tag','scale');
     step_box = findall(0,'tag','step_box');
     tmp = get(hh,'string');
     tmp2 = get(step_box,'string');
     if(isempty(tmp) ||isempty(tmp2))
-        waitfor(msgbox("scale parameter cannot be none",'modal'));
+        waitfor(msgbox("scale or mesh pieces parameter cannot be none",'modal'));
         return
     else
           data_exp = zeros(size(data,1),size(data,2));
