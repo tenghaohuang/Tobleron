@@ -22,7 +22,7 @@ function varargout = Tobleron_GUI(varargin)
 
 % Edit the above text to modify the response to help Tobleron_GUI
 
-% Last Modified by GUIDE v2.5 03-May-2020 23:37:59
+% Last Modified by GUIDE v2.5 30-Jun-2020 14:45:07
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -175,7 +175,7 @@ if(isvalid(uitable_handle)==1)
      set(uitable_handle,'data',data);   
 
 end
-% data(leg*2,3:size(pts,2))=pts(2,:);
+
 function newStack = pushStack(a,newValue)
 newStack = [a,newValue];
 
@@ -377,7 +377,7 @@ if((strcmp(key_press,'x')||strcmp(key_press,'X')))
     drawData();
 end
 if((strcmp(key_press,'z')||strcmp(key_press,'Z')))
-        global api;
+    global api;
     global r;
     r = api.getVisibleLocation();
       [data,pointer] = getData();
@@ -408,15 +408,15 @@ if((strcmp(key_press,'z')||strcmp(key_press,'Z')))
     end
     updatePM(legnum);
     drawData();
-    figure(1)
+    figure(1);
 end
 
-function drawData(startover)
+function [pts]=drawData(startover)
     global leg;
     global frames_path;
     global begin;
     global data
-
+    pts =[];
     [data,pointer] = getData();
     leg = PM_getMax();
 
@@ -426,7 +426,7 @@ function drawData(startover)
     handle_fig = figure(1);
     close(handle_fig);
     SeperateView(I);
-    disp('111111')
+    
     if(leg==0)
         
         return;
@@ -446,9 +446,11 @@ function drawData(startover)
     global points;
     global watch;
     current_leg = PM_get();
-
+    global tmpp;
+    tmpp=[];
     for i =1:leg
-        watch = i;
+        
+        
         figure(1);
         x = data(begin+i*2-1,3:size(data,2));
         y = data(begin+i*2,3:size(data,2));
@@ -456,88 +458,206 @@ function drawData(startover)
         points = cleanPts(points);
         hold on;
 %         draw(x,y);
+        
         if(i~=current_leg)
-            paint(points,'none');
+            pts_ = paint(points,'none');
         else
-            paint(points,'-c');
+            pts_ = paint(points,'-c');
         end
+        tmpp = [tmpp;pts_]
     end
+    pts = tmpp;
 
 
     
 
 function SeperateView(I)
-global api;
-global r;
-h = findall(0,'tag','MagBox');
-mag_num = str2num(get(h,'string'));
-hFig = figure('Toolbar','none',...
-'Menubar','none');
-% set(hFig,'Position',[2,2,2,2])
-global hIm;
-hIm = imshow(I);
-%hFig= figure(1);
-global hSP;
-hSP = imscrollpanel(hFig,hIm);
-api = iptgetapi(hSP);
-api.setMagnification(mag_num) % 2X = 200%
+    global api;
+    global r;
+    h = findall(0,'tag','MagBox');
+    mag_num = str2num(get(h,'string'));
+    hFig = figure('Toolbar','none',...
+    'Menubar','none');
+    % set(hFig,'Position',[2,2,2,2])
+    global hIm;
+    hIm = imshow(I);
+    %hFig= figure(1);
+    global hSP;
+    hSP = imscrollpanel(hFig,hIm);
+    api = iptgetapi(hSP);
+    api.setMagnification(mag_num) % 2X = 200%
 
 
 
-hMagBox = immagbox(hFig, hIm);
+    hMagBox = immagbox(hFig, hIm);
 
- boxPosition = get(hMagBox, 'Position');
- set(hMagBox,'Position', [0, 0, boxPosition(3), boxPosition(4)])
+     boxPosition = get(hMagBox, 'Position');
+     set(hMagBox,'Position', [0, 0, boxPosition(3), boxPosition(4)])
 
-set(0,'units','pixels'); %Sets the units of your root object (screen) to pixels
-Pix_SS = get(0,'screensize'); %Obtains this pixel information
-width=Pix_SS(3)-302;
-height=Pix_SS(4);
-x0=0;
-y0=0;
-set(hFig,'position',[x0,y0,width,height])
+    set(0,'units','pixels'); %Sets the units of your root object (screen) to pixels
+    Pix_SS = get(0,'screensize'); %Obtains this pixel information
+    width=Pix_SS(3)-302;
+    height=Pix_SS(4);
+    x0=0;
+    y0=0;
+    set(hFig,'position',[x0,y0,width,height])
 
-global ret
-global overview;
-f1 =  findall(0,'tag','figure1');
-overview = imoverviewpanel(f1,hIm)
-set(overview,'Units','Normalized',...
-'Position',[0.125 0.05 0.75 .25]) %This controls the size and the position of the magnification window.
-% Get the scroll panel API to programmatically control the view.
-api = iptgetapi(hSP);
-% Get the current magnification and position.
-if(isempty(r))
-    r = api.getVisibleLocation();
-end
-api.setVisibleLocation(r);
-mag = api.getMagnification();
+    global ret
+    global overview;
+    f1 =  findall(0,'tag','figure1');
+    overview = imoverviewpanel(f1,hIm)
+    set(overview,'Units','Normalized',...
+    'Position',[0.125 0.05 0.75 .25]) %This controls the size and the position of the magnification window.
+    % Get the scroll panel API to programmatically control the view.
+    api = iptgetapi(hSP);
+    % Get the current magnification and position.
+    if(isempty(r))
+        r = api.getVisibleLocation();
+    end
+    api.setVisibleLocation(r);
+    mag = api.getMagnification();
 
-set(hIm,'ButtonDownFcn',@curve);
-set(hFig,'KeyPressFcn',@press);
+    set(hIm,'ButtonDownFcn',@curve);
+    set(hFig,'KeyPressFcn',@press);
 
 function [points]=draw(x,y)
+    
     global h_blue;
     h_blue = plot(x, y, 'b-o');
     global h_red
+    hh = findall(0,'tag','step_box');
+    tmp = get(hh,'string');
+
+    if (isempty(tmp))
+        stepSize = 0.01;
+    else
+        stepSize = 1/str2num(tmp);
+    end 
+
     % Allocate Memory for curve
-    stepSize = 0.01; % hundreds pts + 1
+     
     u = 0: stepSize: 1;
     numOfU = length(u);
+    global c;
     c = zeros(2, numOfU);
-    global pts
+    
     % Iterate over curve and apply deCasteljau
     numOfPts = length(x);
     pts = [x; y];
     pts= cleanPts(pts);
+    
     for i = 1: numOfU
         ui = u(i);
         c(:, i) = deCasteljau(ui, pts, numOfPts, numOfPts);
     end
-   
-    h_red = plot(c(1, :), c(2, :), '-r');
-    points = pts;
     
-function paint(pts,color)
+    h_red = plot(c(1, :), c(2, :), '-r');
+    
+    points = pts;
+
+function [points] = CalcDecas(pts)
+    hh = findall(0,'tag','step_box');
+    tmp = get(hh,'string');
+
+    if (isempty(tmp))
+        stepSize = 0.01;
+    else
+        stepSize = 1/str2num(tmp);
+    end 
+
+    % Allocate Memory for curve
+     
+    u = 0: stepSize: 1;
+    numOfU = length(u);
+    global pts_watch;
+    pts_watch = pts;
+    c = zeros(2, numOfU);
+    pts= cleanPts(pts);
+    % Iterate over curve and apply deCasteljau
+    numOfPts = length(pts(1,:));
+    
+    
+    
+    for i = 1: numOfU
+        ui = u(i);
+        c(:, i) = deCasteljau(ui, pts, numOfPts, numOfPts);
+    end
+    
+    points = c;   
+function loadMeshPoints(data)
+    for i = 1:(size(data,1)/2)
+        pts = [data(2*i-1,3:end);data(2*i,3:end)];
+        mesh_pts = CalcDecas(pts);
+        mesh_push(mesh_pts,data(2*i-1,1),data(2*i-1,2));    
+            
+    end   
+function mesh_push(pts,fra_num,leg_num)
+
+    global mesh_points;
+ 
+        
+%     [mesh_points,pointer] = getData();
+    pointer = size(mesh_points,1)+1;
+    
+%     updatePM(leg_counter);
+
+    if(isempty(leg_num))
+        leg_counter = PM_get();
+    else
+        leg_counter = leg_num;
+    end   
+    
+    if(isempty(fra_num))
+        frames_num = getFramesNum();
+    else
+        frames_num = fra_num;
+    end
+    
+    for i = 1:size(pts,2)
+        mesh_points(pointer,1) = frames_num;
+        mesh_points(pointer,2 )= leg_counter;
+        mesh_points(pointer,i+2) =pts(1,i);
+    end
+    
+    pointer = pointer+1;
+    
+    
+    for i = 1:size(pts,2)
+        mesh_points(pointer,1) = frames_num;
+        mesh_points(pointer,2 )= leg_counter;
+        mesh_points(pointer,i+2) =pts(2,i);
+    end
+    
+     for i=1:size(mesh_points,1)
+         for j=i:size(mesh_points,1)
+             if(mesh_points(i,1)>mesh_points(j,1))
+                 tmp = mesh_points(i,:);
+                 mesh_points(i,:)=mesh_points(j,:);
+                 mesh_points(j,:)=tmp;
+             end
+         end
+     end
+     
+      frame_list = mesh_points(:,1);
+      index_list = find(frame_list==frames_num);
+      if(~isempty(index_list))
+      
+      for i = index_list(1):index_list(end)
+          for j = i:index_list(end)
+              if(mesh_points(i,1)>mesh_points(j,1))
+                  tmp = mesh_points(i,:);
+                  mesh_points(i,:)=mesh_points(j,:);
+                  mesh_points(j,:)=tmp;
+              end
+          end
+      end
+      end
+      
+      
+      
+%     TODOOOOOOO step size  
+function [pts] = paint(pts,color)
+global c;
 hold on;
     if(isempty(pts))
         return;
@@ -562,20 +682,24 @@ hold on;
         ui = u(i);
         c(:, i) = deCasteljau(ui, pts, numOfPts, numOfPts);
     end
-    
+    pts = c;
+%     mesh_push(c);
     % Plot curve
-    %axis([0 1 0 1]);
-    if(strcmp(color,'none'))
     plot(c(1, :), c(2, :), '-y');
-    else
-    plot(c(1, :), c(2, :), color);
-    end
+%     if(strcmp(color,'none'))
+%         plot(c(1, :), c(2, :), '-y');
+%         hlod on;
+%     else
+%         hold on;
+%         plot(c(1, :), c(2, :),'.');
+%     end
     
 function curve(~,~)
 % Init control polygon
 %figure;
 %axis([0 1 0 1]);
 %imshow('frame3.jpg');
+
 max = PM_getMax();
 ct = PM_get();
 if(ct<max)
@@ -585,13 +709,15 @@ end
 x = x';
 y = y';
 
-    % Plot control polygon
-    hold on;
-    pts= draw(x,y);
-    hold on;
-    updateData(pts);
-    leg = PM_getMax();
-    updatePM(leg+1);
+% Plot control polygon
+hold on;
+pts= draw(x,y);
+
+hold on;
+updateData(pts);
+leg = PM_getMax();
+updatePM(leg+1);
+mesh_push(pts,'','');
 
 % Select video button
 % -usage: Select a video and decompose it into frames
@@ -621,6 +747,9 @@ I=imread(fullfile(frames_path,filename));
 SeperateView(I);
 global data;
 data=[];
+
+global mesh_points;
+mesh_points = [];
 % Export button
 % -usage: Ecport a Xlsx file, two folders: one named "WRTleg", which
 % ------- outputs N txt files (N is the number of legs), each 
@@ -634,29 +763,58 @@ data=[];
 % -------- 
 function export_but_Callback(hObject, eventdata, handles)
 global data;
-
+global mesh_points;
+global data_exp;
 global uitable_handle;
 [bool,uitable_handle] = SetUitable(data)
 data = get(uitable_handle,'Data');
+
+    hh = findall(0,'tag','scale');
+    step_box = findall(0,'tag','step_box');
+    tmp = get(hh,'string');
+    tmp2 = get(step_box,'string');
+    if(isempty(tmp) ||isempty(tmp2))
+        waitfor(msgbox("scale parameter cannot be none",'modal'));
+        return
+    else
+          data_exp = zeros(size(data,1),size(data,2));
+          mesh_points_exp = zeros(size(mesh_points,1),size(mesh_points,2));
+          data_exp(:,1:2) = data(:,1:2);
+          mesh_points_exp(:,1:2)= mesh_points(:,1:2)
+          mesh_points_exp(:,3:end) = mesh_points(:,3:end)/str2num(tmp);
+          data_exp(:,3:end) = data(:,3:end)/str2num(tmp);
+    end
+    
 name = datestr(now);
 waitfor(msgbox("Select a folder to save xlsx file",'modal'));
  FileName = uiputfile(strcat(name,'.xlsx'),'Save as');
-waitfor(msgbox("Select a folder to save frames and legs information",'modal'));
+waitfor(msgbox("Select a folder to save the data",'modal'));
  name = uigetdir();
+ currentFolder = pwd;
 cd(name)
-xlswrite(FileName,data);
-mkdir WRTframe;
-cd WRTframe;
-save2txt(data);
-cd ..;
 
-mkdir WRTleg;
-cd WRTleg
-gatherLeg(data);
-cd ..;
+xlswrite(FileName,data_exp);
+mkdir MeshPoints;
+
+cd MeshPoints;
+    
+%     save2txt(mesh_points_exp);
+    gatherLeg(mesh_points_exp)
+% cd ..;
+% mkdir WRTframe;
+% cd WRTframe;
+%     save2txt(mesh_points_exp);
+% cd ..;
+% 
+% mkdir WRTleg;
+% cd WRTleg
+% gatherLeg(mesh_points_exp);
+% cd ..;
  cd ..;
-function gatherLeg(data)
+ cd(currentFolder);
 
+function gatherLeg(data)
+    
     if(isempty(data))
         return;
     end
@@ -689,9 +847,9 @@ function gatherLeg(data)
         for ii=1:size(data2save,1)
             for j=1:size(data2save,2)
                 if j==size(data2save,2)
-                    fprintf(fid,'%d\r\n',data2save(ii,j));%��������һ�����ͻ���
+                    fprintf(fid,'%d\r\n',data2save(ii,j));
                 else
-                    fprintf(fid,'%d  ',data2save(ii,j));%����������һ������tab
+                    fprintf(fid,'%d  ',data2save(ii,j));
                 end
             end
 
@@ -702,7 +860,7 @@ function gatherLeg(data)
     end
 function bool = isEqual(a,b)
 bool = (abs(a-b)<0.001);
-display(bool)
+
 
 
 function save2txt(data)
@@ -714,10 +872,6 @@ for i=1:size(data,1)
         break;
     end
     if(fra==data(i,1)&&fra==data(i+1,1)&&leg == data(i,2)&&leg==data(i+1,2))
-        
-    
-        
-            
             data2save(1,:) = data(i,:);
             data2save(2,:) = data(i+1,:);
             
@@ -736,8 +890,7 @@ for i=1:size(data,1)
                 end
 
             end
-        fclose(fid);
-
+            fclose(fid);
             cd ..
        
         
@@ -926,6 +1079,8 @@ function OEF_Callback(hObject, eventdata, handles)
 global frames_path;
 global data;
 data =[];
+global mesh_points;
+mesh_points =[];
 
 updatePM(0);
 folderPath = uigetdir();
@@ -1121,11 +1276,23 @@ function Load_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global data
 global frames_path
-waitfor(msgbox("Select csv file path",'modal'));
-[baseName, folder] = uigetfile('*.csv');
+global mesh_points;
+mesh_points = [];
+waitfor(msgbox("Select mat file path",'modal'));
+[baseName, folder] = uigetfile('*.mat');
 
 filePath = fullfile(folder, baseName);
-data = csvread(filePath);
+% data = csvread(filePath);
+%     hh = findall(0,'tag','scale');
+%     tmp = get(hh,'string');
+%     if(isempty(tmp))
+%         waitfor(msgbox("scale parameter cannot be none",'modal'));
+%         return
+%     else
+%           
+%           data(:,3:end) = data(:,3:end)*str2num(tmp);
+%     end
+load(filePath);
 waitfor(msgbox("Select frames path",'modal'));
 folderPath = uigetdir();
 frames_path= folderPath;
@@ -1137,8 +1304,13 @@ for i = 1:size(data,1)
         count = count+1;
     end
 end
-updatePM(count/2)
-drawData()
+updatePM(count/2);
+
+drawData(data);
+loadMeshPoints(data);
+
+        
+
 
 function MagBox_Callback(hObject, eventdata, handles)
 % hObject    handle to MagBox (see GCBO)
@@ -1167,3 +1339,65 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 h = findall(0,'tag','MagBox');
 set(h,'string',num2str(2))
+
+
+
+function step_box_Callback(hObject, eventdata, handles)
+% hObject    handle to step_box (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of step_box as text
+%        str2double(get(hObject,'String')) returns contents of step_box as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function step_box_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to step_box (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function scale_Callback(hObject, eventdata, handles)
+% hObject    handle to scale (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of scale as text
+%        str2double(get(hObject,'String')) returns contents of scale as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function scale_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to scale (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+function LoadProject_Callback(hObject, eventdata, handles)
+
+global data;
+global mesh_points;
+global data_exp;
+global uitable_handle;
+[bool,uitable_handle] = SetUitable(data)
+data = get(uitable_handle,'Data');
+    
+ name = uigetdir();
+  currentFolder = pwd;
+ cd(name);
+
+save(datestr(now),'data');
+cd(currentFolder);

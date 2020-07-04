@@ -1,9 +1,14 @@
 
-function curve()
+function curve(step_size)
 % Init control polygon
 %figure;
 %axis([0 1 0 1]);
 %imshow('frame3.jpg');
+if (isempty(step_size))
+   stepSize = 0.01;
+else
+    stepSI
+end % hundreds pts + 1
 [x, y] = getpts();
 x = x';
 y = y';
@@ -18,7 +23,7 @@ while (true)
     hold on;
 
     % Allocate Memory for curve
-    stepSize = 0.01; % hundreds pts + 1
+    
     u = 0: stepSize: 1;
     numOfU = length(u);
     c = zeros(2, numOfU);
