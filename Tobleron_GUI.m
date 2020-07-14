@@ -591,6 +591,7 @@ function loadMeshPoints(data)
         mesh_push(mesh_pts,data(2*i-1,1),data(2*i-1,2));    
             
     end   
+% Merely push mesh points 
 function mesh_push(pts,fra_num,leg_num)
 
     global mesh_points;
@@ -717,7 +718,7 @@ hold on;
 updateData(pts);
 leg = PM_getMax();
 updatePM(leg+1);
-mesh_push(pts,'','');
+% mesh_push(pts,'','');
 
 % Select video button
 % -usage: Select a video and decompose it into frames
@@ -771,6 +772,7 @@ data = get(uitable_handle,'Data');
     if(isempty(data))
         return
     end
+
     hh = findall(0,'tag','scale');
     step_box = findall(0,'tag','step_box');
     tmp = get(hh,'string');
@@ -779,11 +781,13 @@ data = get(uitable_handle,'Data');
         waitfor(msgbox("scale or mesh pieces parameter cannot be none",'modal'));
         return
     else
+          mesh_points = [];
+          loadMeshPoints(data);
           data_exp = zeros(size(data,1),size(data,2));
-          mesh_points_exp = zeros(size(mesh_points,1),size(mesh_points,2));
+            mesh_points_exp = zeros(size(mesh_points,1),size(mesh_points,2));
           data_exp(:,1:2) = data(:,1:2);
-          mesh_points_exp(:,1:2)= mesh_points(:,1:2)
-          mesh_points_exp(:,3:end) = mesh_points(:,3:end)/str2num(tmp);
+            mesh_points_exp(:,1:2)= mesh_points(:,1:2)
+            mesh_points_exp(:,3:end) = mesh_points(:,3:end)/str2num(tmp);
           data_exp(:,3:end) = data(:,3:end)/str2num(tmp);
     end
     
@@ -1309,7 +1313,7 @@ end
 updatePM(count/2);
 
 drawData(data);
-loadMeshPoints(data);
+% loadMeshPoints(data);
 
         
 
