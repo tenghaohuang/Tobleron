@@ -917,10 +917,10 @@ function frame_numbox_Callback(hObject, eventdata, handles)
     [data,pointer] = getData();
     frames_num = getFramesNum();
     global frames_path;
-    if(frames_num==1)
-        msgbox("No previous frame");
-        return
-    end
+%     if(frames_num==1)
+%         msgbox("No previous frame");
+%         return
+%     end
        
     handle_fig = figure(1);
     close(handle_fig);
@@ -931,6 +931,7 @@ function frame_numbox_Callback(hObject, eventdata, handles)
     updatePM(leg_counter);
     filename = strcat('frame',num2str(frames_num),'.jpg');
     I=imread(fullfile(frames_path,filename));
+    SeperateView(I);
     updatePM(0);
 
     [legnum,begin] = getNums(frames_num);
